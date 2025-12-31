@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TgWork - Биржа фриланса</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            padding-bottom: 70px;
+        }
+
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #0d1117;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #58a6ff;
+        }
+
+        .search-box {
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 6px 12px;
+            color: #c9d1d9;
+            font-size: 13px;
+        }
+
+        .content {
+            padding: 16px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #58a6ff;
+            margin-bottom: 4px;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: #c9d1d9;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #6e7681;
+        }
+
+        .price-badge {
+            background: #238636;
+            color: #aaffc9;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #238636;
+            color: #aaffc9;
+        }
+
+        .btn-primary:active {
+            background: #2ea043;
+        }
+
+        .btn-secondary {
+            background: #30363d;
+            color: #c9d1d9;
+        }
+
+        .btn-secondary:active {
+            background: #464f58;
+        }
+
+        .btn-danger {
+            background: #da3633;
+            color: #fff;
+        }
+
+        .btn-small {
+            width: auto;
+            padding: 6px 12px;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #c9d1d9;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tag {
+            background: #30363d;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-tag.active {
+            background: #58a6ff;
+            color: #0d1117;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6e7681;
+            text-transform: uppercase;
+            margin: 20px 0 12px 0;
+            padding-top: 16px;
+            border-top: 1px solid #30363d;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #161b22;
+            border-top: 1px solid #30363d;
+            display: flex;
+            justify-content: space-around;
+            max-width: 600px;
+            margin: 0 auto;
+            z-index: 200;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            gap: 4px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #6e7681;
+            font-size: 11px;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: #58a6ff;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .user-info h2 {
+            font-size: 16px;
+            color: #c9d1d9;
+            margin-bottom: 4px;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            color: #6e7681;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 16px;
+            color: #6e7681;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #30363d;
+            margin: 12px 0;
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #30363d;
+            background: #0d1117;
+            color: #c9d1d9;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            border-color: #58a6ff;
+            background: #0d1117;
+            color: #58a6ff;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-content {
+            background: #161b22;
+            max-width: 600px;
+            margin: 20px auto;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+        }
+
+        .modal-header {
+            padding: 16px;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            color: #c9d1d9;
+            font-size: 16px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #6e7681;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 16px;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: #6e7681;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 0;
+        }
+
+        .menu-dropdown {
+            position: absolute;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            top: 30px;
+            right: 0;
+            min-width: 200px;
+            z-index: 500;
+            display: none;
+        }
+
+        .menu-dropdown.active {
+            display: block;
+        }
+
+        .menu-item {
+            padding: 10px 16px;
+            border-bottom: 1px solid #30363d;
+            cursor: pointer;
+            font-size: 13px;
+            color: #c9d1d9;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:hover {
+            background: #30363d;
+        }
+
+        .menu-item.danger {
+            color: #da3633;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .card-menu {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="top-bar">
+            <div class="logo">💼 TgWork</div>
+            <input type="text" class="search-box" id="searchInput" placeholder="Поиск...">
+        </div>
+
+        <div class="content">
+            <!-- LOGIN -->
+            <div id="loginPage" class="page active">
+                <div style="text-align: center; padding: 40px 0 20px 0;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">💼</div>
+                    <h1 style="font-size: 28px; margin-bottom: 8px; color: #c9d1d9;">TgWork</h1>
+                    <p style="color: #6e7681; font-size: 14px; margin-bottom: 40px;">Биржа фриланса</p>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="emailLogin" placeholder="user@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Пароль</label>
+                        <input type="password" id="passwordLogin" placeholder="Ваш пароль" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Войти</button>
+                </form>
+
+                <div style="text-align: center; margin-top: 16px;">
+                    <button type="button" class="btn btn-secondary" onclick="switchPage('registerPage')">Создать аккаунт</button>
+                </div>
+            </div>
+
+            <!-- REGISTER -->
+            <div id="registerPage" class="page">
+                <div style="margin-bottom: 20px;">
+                    <h2 style="color: #c9d1d9; font-size: 20px;">Регистрация</h2>
+                </div>
+
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="emailReg" placeholder="your@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Имя</label>
+                        <input type="text" id="nameReg" placeholder="Ваше имя" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Пароль</label>
+                        <input type="password" id="passwordReg" placeholder="Минимум 4 символа" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Повторить пароль</label>
+                        <input type="password" id="passwordRegConfirm" placeholder="Подтверждение" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                    <button type="button" class="btn btn-secondary" onclick="switchPage('loginPage')">Назад</button>
+                </form>
+            </div>
+
+            <!-- HOME -->
+            <div id="homePage" class="page">
+                <div class="user-header" id="userHeader"></div>
+                <div id="homeContent"></div>
+            </div>
+
+            <!-- MARKETPLACE (ЗАКАЗЫ/УСЛУГИ) -->
+            <div id="marketplacePage" class="page">
+                <div style="margin-bottom: 16px;">
+                    <h2 style="color: #c9d1d9; font-size: 16px; margin-bottom: 8px;" id="marketplaceTitle">Биржа</h2>
+                    <div class="filter-bar" id="categoryFilter"></div>
+                </div>
+                <div id="marketplaceList"></div>
+            </div>
+
+            <!-- MY SERVICES (ДЛЯ ИСПОЛНИТЕЛЯ) -->
+            <div id="myServicesPage" class="page">
+                <div style="margin-bottom: 16px; display: flex; gap: 8px;">
+                    <h2 style="flex: 1; color: #c9d1d9; font-size: 16px;">Мои услуги</h2>
+                    <button class="btn btn-primary btn-small" onclick="switchPage('createServicePage')">➕</button>
+                </div>
+                <div id="myServicesList"></div>
+            </div>
+
+            <!-- CREATE SERVICE (ДЛЯ ИСПОЛНИТЕЛЯ) -->
+            <div id="createServicePage" class="page">
+                <h2 style="color: #c9d1d9; font-size: 18px; margin-bottom: 16px;">Новая услуга</h2>
+                <form id="createServiceForm">
+                    <div class="form-group">
+                        <label>Название</label>
+                        <input type="text" id="serviceName" placeholder="Название услуги" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Описание</label>
+                        <textarea id="serviceDesc" placeholder="Подробное описание..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Категория</label>
+                        <select id="serviceCategory" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Цена (₽)</label>
+                        <input type="number" id="servicePrice" placeholder="500" required min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Дней на выполнение</label>
+                        <input type="number" id="serviceDays" placeholder="3" required min="1">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                    <button type="button" class="btn btn-secondary" onclick="switchPage('myServicesPage')">Отмена</button>
+                </form>
+            </div>
+
+            <!-- MY ORDERS (ДЛЯ ЗАКАЗЧИКА) -->
+            <div id="myOrdersPage" class="page">
+                <div style="margin-bottom: 16px; display: flex; gap: 8px;">
+                    <h2 style="flex: 1; color: #c9d1d9; font-size: 16px;">Мои заказы</h2>
+                    <button class="btn btn-primary btn-small" onclick="switchPage('createOrderPage')">➕</button>
+                </div>
+                <div id="myOrdersList"></div>
+            </div>
+
+            <!-- CREATE ORDER (ДЛЯ ЗАКАЗЧИКА) -->
+            <div id="createOrderPage" class="page">
+                <h2 style="color: #c9d1d9; font-size: 18px; margin-bottom: 16px;">Новый заказ</h2>
+                <form id="createOrderForm">
+                    <div class="form-group">
+                        <label>Название</label>
+                        <input type="text" id="orderName" placeholder="Описание работы" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Описание</label>
+                        <textarea id="orderDesc" placeholder="Что нужно сделать..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Категория</label>
+                        <select id="orderCategory" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Бюджет (₽)</label>
+                        <input type="number" id="orderBudget" placeholder="1000" required min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Дней на выполнение</label>
+                        <input type="number" id="orderDeadline" placeholder="5" required min="1">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Создать заказ</button>
+                    <button type="button" class="btn btn-secondary" onclick="switchPage('myOrdersPage')">Отмена</button>
+                </form>
+            </div>
+
+            <!-- PROFILE -->
+            <div id="profilePage" class="page">
+                <div style="margin-bottom: 16px;">
+                    <h2 style="color: #c9d1d9; font-size: 16px;">Профиль</h2>
+                </div>
+                <div id="profileContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="switchPage('homePage'); updateNav(this)">
+            <div class="nav-icon">🏠</div>
+            <div>Home</div>
+        </button>
+        <button class="nav-item" id="navMarketplace" onclick="switchPage('marketplacePage'); updateNav(this)">
+            <div class="nav-icon">🛍️</div>
+            <div>Биржа</div>
+        </button>
+        <button class="nav-item" id="navMyWork" onclick="updateNav(this)">
+            <div class="nav-icon">📦</div>
+            <div id="navMyWorkLabel">Услуги</div>
+        </button>
+        <button class="nav-item" onclick="switchPage('profilePage'); updateNav(this)">
+            <div class="nav-icon">👤</div>
+            <div>Профиль</div>
+        </button>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div id="orderDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Детали заказа</h2>
+                <button class="modal-close" onclick="closeOrderDetail()">&times;</button>
+            </div>
+            <div class="modal-body" id="orderDetailBody">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const API_URL = 'http://localhost:3000/api';
+        const STORAGE_KEY = 'tgwork_user';
+        
+        let currentUser = null;
+        let selectedCategory = null;
+        
+        const CATEGORIES = [
+            { id: 'design', name: '🎨 Дизайн' },
+            { id: 'dev', name: '💻 Разработка' },
+            { id: 'writing', name: '✍️ Копирайтинг' },
+            { id: 'marketing', name: '📊 Маркетинг' },
+            { id: 'seo', name: '🔍 SEO' },
+            { id: 'translate', name: '🌐 Переводы' },
+            { id: 'video', name: '🎬 Видео' },
+            { id: 'music', name: '🎵 Музыка' }
+        ];
+
+        function switchPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageName).classList.add('active');
+            
+            if (pageName === 'homePage' && currentUser) displayHome();
+            if (pageName === 'marketplacePage' && currentUser) displayMarketplace();
+            if (pageName === 'myServicesPage' && currentUser) displayMyServices();
+            if (pageName === 'myOrdersPage' && currentUser) displayMyOrders();
+            if (pageName === 'profilePage' && currentUser) displayProfile();
+        }
+
+        function updateNav(btn) {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        async function loadUserFromServer(email) {
+            email = email.toLowerCase();
+            try {
+                const response = await fetch(`${API_URL}/users/${encodeURIComponent(email)}`);
+                if (response.ok) {
+                    currentUser = await response.json();
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({email: currentUser.email}));
+                    return true;
+                }
+            } catch (e) {}
+            return false;
+        }
+
+        async function saveUser(userData) {
+            userData.email = userData.email.toLowerCase();
+            try {
+                const response = await fetch(`${API_URL}/users/save`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(userData)
+                });
+                if (response.ok) {
+                    currentUser = userData;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({email: userData.email}));
+                    return true;
+                }
+            } catch (e) {}
+            return false;
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('emailLogin').value.toLowerCase();
+            const password = document.getElementById('passwordLogin').value;
+
+            const loaded = await loadUserFromServer(email);
+            if (loaded && currentUser && currentUser.password === password) {
+                switchPage('homePage');
+                updateNav(document.querySelector('[onclick*="homePage"]'));
+                displayHome();
+            } else {
+                alert('Неверные учетные данные');
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('emailReg').value.toLowerCase();
+            const password = document.getElementById('passwordReg').value;
+            const passwordConfirm = document.getElementById('passwordRegConfirm').value;
+            const name = document.getElementById('nameReg').value;
+
+            if (password.length < 4) {
+                alert('Пароль минимум 4 символа');
+                return;
+            }
+            if (password !== passwordConfirm) {
+                alert('Пароли не совпадают');
+                return;
+            }
+
+            const userData = {
+                email: email,
+                password: password,
+                name: name,
+                accountType: 'freelancer',
+                username: '',
+                bio: '',
+                rating: 0,
+                reviews: 0,
+                services: [],
+                orders: [],
+                telegram_id: null,
+                created_at: new Date().toISOString()
+            };
+
+            const saved = await saveUser(userData);
+            if (saved) {
+                alert('Аккаунт создан! Вы - исполнитель');
+                switchPage('homePage');
+                displayHome();
+            }
+        });
+
+        function displayHome() {
+            const isFreelancer = currentUser.accountType === 'freelancer';
+            const avatarChar = currentUser.name.charAt(0).toUpperCase();
+            
+            document.getElementById('userHeader').innerHTML = `
+                <div class="avatar">${avatarChar}</div>
+                <div class="user-info">
+                    <h2>${currentUser.name}</h2>
+                    <p>${isFreelancer ? '🚀 Исполнитель' : '💼 Заказчик'}</p>
+                </div>
+            `;
+
+            document.getElementById('navMyWorkLabel').textContent = isFreelancer ? 'Услуги' : 'Заказы';
+            document.getElementById('navMyWork').onclick = () => {
+                if (isFreelancer) {
+                    switchPage('myServicesPage');
+                } else {
+                    switchPage('myOrdersPage');
+                }
+                updateNav(this);
+            };
+
+            if (isFreelancer) {
+                document.getElementById('homeContent').innerHTML = `
+                    <button class="btn btn-primary" onclick="switchPage('createServicePage')">➕ Создать услугу</button>
+                    <div class="section-title">Ваши услуги (${currentUser.services?.length || 0})</div>
+                    ${(currentUser.services || []).length ? 
+                        (currentUser.services || []).slice(0, 3).map(s => `
+                            <div class="card">
+                                <div class="card-title">${s.name}</div>
+                                <div class="card-desc">${s.description}</div>
+                                <div class="card-footer">
+                                    <span class="price-badge">${s.price}₽</span>
+                                    <span>${s.days}дн</span>
+                                </div>
+                            </div>
+                        `).join('')
+                        : '<div style="color: #6e7681; padding: 20px; text-align: center;">Нет услуг</div>'
+                    }
+                `;
+            } else {
+                document.getElementById('homeContent').innerHTML = `
+                    <button class="btn btn-primary" onclick="switchPage('createOrderPage')">➕ Создать заказ</button>
+                    <div class="section-title">Ваши заказы (${currentUser.orders?.length || 0})</div>
+                    ${(currentUser.orders || []).length ?
+                        (currentUser.orders || []).slice(0, 3).map(o => `
+                            <div class="card">
+                                <div class="card-title">${o.name}</div>
+                                <div class="card-desc">${o.description}</div>
+                                <div class="card-footer">
+                                    <span class="price-badge">${o.budget}₽</span>
+                                    <span>${o.deadline}дн</span>
+                                </div>
+                            </div>
+                        `).join('')
+                        : '<div style="color: #6e7681; padding: 20px; text-align: center;">Нет заказов</div>'
+                    }
+                `;
+            }
+        }
+
+        function displayMarketplace() {
+            const isFreelancer = currentUser.accountType === 'freelancer';
+            document.getElementById('marketplaceTitle').textContent = isFreelancer ? 'Доступные заказы' : 'Услуги';
+            
+            document.getElementById('categoryFilter').innerHTML = CATEGORIES.map(cat => `
+                <div class="filter-tag ${selectedCategory === cat.id ? 'active' : ''}" 
+                     onclick="selectedCategory = '${cat.id}'; displayMarketplace()">
+                    ${cat.name}
+                </div>
+            `).join('');
+
+            if (isFreelancer) {
+                // ИСПОЛНИТЕЛЬ видит заказы
+                let allOrders = [];
+                try {
+                    const stored = localStorage.getItem('all_orders');
+                    allOrders = stored ? JSON.parse(stored) : [];
+                } catch (e) {}
+
+                const filtered = selectedCategory 
+                    ? allOrders.filter(o => o.category === selectedCategory)
+                    : allOrders;
+
+                document.getElementById('marketplaceList').innerHTML = filtered.length ? 
+                    filtered.map(o => `
+                        <div class="card" style="cursor: pointer;" onclick="openOrderDetail(${o.id})">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-title">📋 ${o.name}</div>
+                                    <div style="font-size: 12px; color: #6e7681; margin-bottom: 8px;">от ${o.ownerName}</div>
+                                </div>
+                                <div class="card-menu">
+                                    <button class="menu-btn" onclick="toggleOrderMenu(event, ${o.id})">⋮</button>
+                                    <div id="menu-${o.id}" class="menu-dropdown">
+                                        <div class="menu-item" onclick="reportOrder(${o.id})">⚠️ Пожаловаться</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-desc">${o.description.substring(0, 80)}...</div>
+                            <div class="card-footer">
+                                <span class="price-badge">${o.budget}₽</span>
+                                <span>⏱️ ${o.deadline}дн</span>
+                            </div>
+                        </div>
+                    `).join('')
+                    : '<div class="empty-state"><div class="empty-state-icon">📭</div>Нет заказов</div>';
+            } else {
+                // ЗАКАЗЧИК видит услуги
+                let allServices = [];
+                try {
+                    const stored = localStorage.getItem('all_services');
+                    allServices = stored ? JSON.parse(stored) : [];
+                } catch (e) {}
+
+                const filtered = selectedCategory 
+                    ? allServices.filter(s => s.category === selectedCategory)
+                    : allServices;
+
+                document.getElementById('marketplaceList').innerHTML = filtered.length ?
+                    filtered.map(s => `
+                        <div class="card" style="cursor: pointer;" onclick="openServiceDetail(${s.id})">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-title">💼 ${s.name}</div>
+                                    <div style="font-size: 12px; color: #6e7681; margin-bottom: 8px;">от ${s.ownerName}</div>
+                                </div>
+                                <div class="card-menu">
+                                    <button class="menu-btn" onclick="toggleServiceMenu(event, ${s.id})">⋮</button>
+                                    <div id="service-menu-${s.id}" class="menu-dropdown">
+                                        <div class="menu-item" onclick="reportService(${s.id})">⚠️ Пожаловаться</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-desc">${s.description.substring(0, 80)}...</div>
+                            <div class="card-footer">
+                                <span class="price-badge">${s.price}₽</span>
+                                <span>⏱️ ${s.days}дн</span>
+                            </div>
+                        </div>
+                    `).join('')
+                    : '<div class="empty-state"><div class="empty-state-icon">📭</div>Нет услуг</div>';
+            }
+        }
+
+        function displayMyServices() {
+            document.getElementById('myServicesList').innerHTML = (currentUser.services || []).length ?
+                (currentUser.services || []).map(s => `
+                    <div class="card">
+                        <div class="card-title">${s.name}</div>
+                        <div class="card-desc">${s.description}</div>
+                        <div class="card-footer">
+                            <span class="price-badge">${s.price}₽</span>
+                            <span>${s.days}дн</span>
+                        </div>
+                    </div>
+                `).join('')
+                : '<div class="empty-state"><div class="empty-state-icon">📦</div>Нет услуг</div>';
+        }
+
+        function displayMyOrders() {
+            document.getElementById('myOrdersList').innerHTML = (currentUser.orders || []).length ?
+                (currentUser.orders || []).map(o => `
+                    <div class="card">
+                        <div class="card-title">${o.name}</div>
+                        <div class="card-desc">${o.description}</div>
+                        <div class="card-footer">
+                            <span class="price-badge">${o.budget}₽</span>
+                            <span>${o.deadline}дн</span>
+                        </div>
+                    </div>
+                `).join('')
+                : '<div class="empty-state"><div class="empty-state-icon">📋</div>Нет заказов</div>';
+        }
+
+        function displayProfile() {
+            const isFreelancer = currentUser.accountType === 'freelancer';
+            document.getElementById('profileContent').innerHTML = `
+                <div class="card">
+                    <div class="card-title">${currentUser.name}</div>
+                    <div style="font-size: 12px; color: #6e7681; margin: 8px 0;">
+                        ${isFreelancer ? '🚀 Исполнитель' : '💼 Заказчик'}
+                    </div>
+                    <div class="divider"></div>
+                    <div style="font-size: 13px; color: #c9d1d9; line-height: 2;">
+                        <div class="stat-item">
+                            <span>📧 Email</span>
+                            <span>${currentUser.email}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>⭐ Рейтинг</span>
+                            <span>${currentUser.rating.toFixed(1)} / 5 (${currentUser.reviews})</span>
+                        </div>
+                        ${isFreelancer ? `
+                            <div class="stat-item">
+                                <span>📦 Услуг</span>
+                                <span>${currentUser.services?.length || 0}</span>
+                            </div>
+                        ` : `
+                            <div class="stat-item">
+                                <span>📋 Заказов</span>
+                                <span>${currentUser.orders?.length || 0}</span>
+                            </div>
+                        `}
+                    </div>
+                </div>
+
+                <div style="margin-top: 16px;">
+                    <div class="section-title">Изменить режим</div>
+                    <div class="mode-toggle">
+                        <button class="mode-btn ${isFreelancer ? 'active' : ''}" onclick="switchMode('freelancer')">
+                            🚀 Исполнитель
+                        </button>
+                        <button class="mode-btn ${!isFreelancer ? 'active' : ''}" onclick="switchMode('client')">
+                            💼 Заказчик
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" style="margin-top: 16px;" onclick="logout()">🚪 Выход</button>
+            `;
+        }
+
+        function switchMode(newMode) {
+            currentUser.accountType = newMode;
+            saveUser(currentUser);
+            alert(`Вы переключились в режим: ${newMode === 'freelancer' ? 'Исполнитель' : 'Заказчик'}`);
+            displayProfile();
+            displayHome();
+        }
+
+        document.getElementById('serviceCategory').innerHTML = CATEGORIES.map(c => 
+            `<option value="${c.id}">${c.name}</option>`
+        ).join('');
+
+        document.getElementById('orderCategory').innerHTML = CATEGORIES.map(c => 
+            `<option value="${c.id}">${c.name}</option>`
+        ).join('');
+
+        document.getElementById('createServiceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const service = {
+                id: Date.now(),
+                name: document.getElementById('serviceName').value,
+                description: document.getElementById('serviceDesc').value,
+                category: document.getElementById('serviceCategory').value,
+                price: parseInt(document.getElementById('servicePrice').value),
+                days: parseInt(document.getElementById('serviceDays').value),
+                ownerName: currentUser.name
+            };
+
+            if (!currentUser.services) currentUser.services = [];
+            currentUser.services.push(service);
+
+            let allServices = [];
+            try {
+                const stored = localStorage.getItem('all_services');
+                allServices = stored ? JSON.parse(stored) : [];
+            } catch (e) {}
+            allServices.push(service);
+            localStorage.setItem('all_services', JSON.stringify(allServices));
+
+            const saved = await saveUser(currentUser);
+            if (saved) {
+                alert('Услуга создана!');
+                document.getElementById('createServiceForm').reset();
+                switchPage('myServicesPage');
+                displayMyServices();
+            }
+        });
+
+        document.getElementById('createOrderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const order = {
+                id: Date.now(),
+                name: document.getElementById('orderName').value,
+                description: document.getElementById('orderDesc').value,
+                category: document.getElementById('orderCategory').value,
+                budget: parseInt(document.getElementById('orderBudget').value),
+                deadline: parseInt(document.getElementById('orderDeadline').value),
+                ownerName: currentUser.name
+            };
+
+            if (!currentUser.orders) currentUser.orders = [];
+            currentUser.orders.push(order);
+
+            let allOrders = [];
+            try {
+                const stored = localStorage.getItem('all_orders');
+                allOrders = stored ? JSON.parse(stored) : [];
+            } catch (e) {}
+            allOrders.push(order);
+            localStorage.setItem('all_orders', JSON.stringify(allOrders));
+
+            const saved = await saveUser(currentUser);
+            if (saved) {
+                alert('Заказ создан!');
+                document.getElementById('createOrderForm').reset();
+                switchPage('myOrdersPage');
+                displayMyOrders();
+            }
+        });
+
+        function logout() {
+            if (confirm('Вы уверены?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                currentUser = null;
+                switchPage('loginPage');
+            }
+        }
+
+        // Modal functions
+        function openOrderDetail(orderId) {
+            let order = null;
+            let allOrders = [];
+            try {
+                const stored = localStorage.getItem('all_orders');
+                allOrders = stored ? JSON.parse(stored) : [];
+            } catch (e) {}
+
+            order = allOrders.find(o => o.id === orderId);
+            if (!order) return;
+
+            const isOwner = order.ownerEmail === currentUser.email;
+            const isFreelancer = currentUser.accountType === 'freelancer';
+
+            let detailHTML = `
+                <div class="card">
+                    <h3 style="color: #58a6ff; margin-bottom: 12px; font-size: 16px;">${order.title}</h3>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 12px; color: #6e7681; margin-bottom: 4px;">Описание</div>
+                        <div style="color: #c9d1d9; font-size: 13px; line-height: 1.5;">${order.description}</div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;">
+                        <div>
+                            <div style="font-size: 12px; color: #6e7681; margin-bottom: 4px;">💰 Бюджет</div>
+                            <div style="color: #238636; font-weight: 600; font-size: 16px;">${order.budget} ₽</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #6e7681; margin-bottom: 4px;">📅 Дедлайн</div>
+                            <div style="color: #c9d1d9; font-size: 14px;">${order.deadline} дн.</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 12px; color: #6e7681; margin-bottom: 4px;">📂 Категория</div>
+                        <div style="color: #c9d1d9; font-size: 13px;">${getCategoryName(order.category)}</div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div style="margin: 12px 0;">
+                        <div style="font-size: 12px; color: #6e7681; margin-bottom: 4px;">👤 Заказчик</div>
+                        <div style="color: #c9d1d9; font-size: 13px;">${order.ownerName}</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 16px; display: flex; gap: 8px; flex-direction: column;">
+                    ${isFreelancer && !isOwner ? `
+                        <button class="btn btn-primary" onclick="submitBid('${orderId}')">
+                            📤 Откликнуться
+                        </button>
+                    ` : ''}
+                    ${isOwner ? `
+                        <button class="btn btn-secondary" onclick="deleteOrder('${orderId}')">
+                            🗑️ Удалить заказ
+                        </button>
+                    ` : ''}
+                    ${!isOwner ? `
+                        <button class="btn btn-secondary" onclick="reportOrder('${orderId}')">
+                            ⚠️ Пожаловаться
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+
+            document.getElementById('orderDetailBody').innerHTML = detailHTML;
+            document.getElementById('orderDetailModal').classList.add('active');
+        }
+
+        function closeOrderDetail() {
+            document.getElementById('orderDetailModal').classList.remove('active');
+        }
+
+        function toggleOrderMenu(event, orderId) {
+            event.stopPropagation();
+            const menu = document.getElementById(`menu-${orderId}`);
+            if (menu) {
+                menu.classList.toggle('active');
+            }
+        }
+
+        function reportOrder(orderId) {
+            closeOrderDetail();
+            let reason = prompt(
+                'Выберите причину жалобы:\n' +
+                '1 - Непонятное объяснение задачи\n' +
+                '2 - Мало платят\n' +
+                '3 - Отправить на модерацию'
+            );
+
+            if (reason === '1') {
+                alert('✅ Жалоба на "Непонятное объяснение задачи" отправлена');
+            } else if (reason === '2') {
+                alert('✅ Жалоба на "Мало платят" отправлена');
+            } else if (reason === '3') {
+                alert('✅ Заказ отправлен на модерацию');
+            }
+        }
+
+        function deleteOrder(orderId) {
+            if (!confirm('Вы уверены? Это действие нельзя отменить.')) return;
+
+            let allOrders = [];
+            try {
+                const stored = localStorage.getItem('all_orders');
+                allOrders = stored ? JSON.parse(stored) : [];
+            } catch (e) {}
+
+            allOrders = allOrders.filter(o => o.id !== orderId);
+            localStorage.setItem('all_orders', JSON.stringify(allOrders));
+
+            if (currentUser.orders) {
+                currentUser.orders = currentUser.orders.filter(o => o.id !== orderId);
+                saveUser(currentUser);
+            }
+
+            closeOrderDetail();
+            alert('✅ Заказ удален');
+            displayMarketplace();
+        }
+
+        function submitBid(orderId) {
+            const bidMessage = prompt('Напишите ваше предложение/отклик на заказ:');
+            if (bidMessage) {
+                alert('✅ Ваш отклик отправлен заказчику!');
+                closeOrderDetail();
+            }
+        }
+
+        function getCategoryName(categoryKey) {
+            const categories = {
+                'design': 'Дизайн',
+                'dev': 'Разработка',
+                'copywriting': 'Копирайтинг',
+                'marketing': 'Маркетинг',
+                'seo': 'SEO',
+                'translate': 'Перевод',
+                'video': 'Видео',
+                'music': 'Музыка'
+            };
+            return categories[categoryKey] || categoryKey;
+        }
+
+        function openServiceDetail(serviceId) {
+            let service = null;
+            let allServices = [];
+            try {
+                const stored = localStorage.getItem('all_services');
+                allServices = stored ? JSON.parse(stored) : [];
+            } catch (e) {}
+
+            service = allServices.find(s => s.id === serviceId);
+            if (!service) return;
+
+            const isOwner = service.ownerEmail === currentUser.email;
+            const isClient = currentUser.accountType === 'client';
+
+            let detailHTML = `
+                <div class="card">
+                    <h3 style="color: #58a6ff; margin-bottom: 12px; font-size: 16px;">${service.name}</h3>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 12px; color: #6e7681; margin-bottom: 4px;">Описание</div>
+                        <div style="color: #c9d1d9; font-size: 13px; line-height: 1.5;">${service.description}</div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;">
+                        <div>
+                            <div style="font-size: 12px; color: #6e7681; margin-bottom: 4px;">💰 Цена</div>
+                            <div style="color: #238636; font-weight: 600; font-size: 16px;">${service.price} ₽</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #6e7681; margin-bottom: 4px;">📅 Срок</div>
+                            <div style="color: #c9d1d9; font-size: 14px;">${service.days} дн.</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 12px; color: #6e7681; margin-bottom: 4px;">📂 Категория</div>
+                        <div style="color: #c9d1d9; font-size: 13px;">${getCategoryName(service.category)}</div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div style="margin: 12px 0;">
+                        <div style="font-size: 12px; color: #6e7681; margin-bottom: 4px;">👤 Исполнитель</div>
+                        <div style="color: #c9d1d9; font-size: 13px;">${service.ownerName}</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 16px; display: flex; gap: 8px; flex-direction: column;">
+                    ${isClient && !isOwner ? `
+                        <button class="btn btn-primary" onclick="buyService('${serviceId}')">
+                            💳 Заказать услугу
+                        </button>
+                    ` : ''}
+                    ${isOwner ? `
+                        <button class="btn btn-secondary" onclick="deleteService('${serviceId}')">
+                            🗑️ Удалить услугу
+                        </button>
+                    ` : ''}
+                    ${!isOwner ? `
+                        <button class="btn btn-secondary" onclick="reportService('${serviceId}')">
+                            ⚠️ Пожаловаться
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+
+            document.getElementById('orderDetailBody').innerHTML = detailHTML;
+            document.getElementById('orderDetailModal').classList.add('active');
+        }
+
+        function toggleServiceMenu(event, serviceId) {
+            event.stopPropagation();
+            const menu = document.getElementById(`service-menu-${serviceId}`);
+            if (menu) {
+                menu.classList.toggle('active');
+            }
+        }
+
+        function reportService(serviceId) {
+            closeOrderDetail();
+            let reason = prompt(
+                'Выберите причину жалобы:\n' +
+                '1 - Непонятное объяснение услуги\n' +
+                '2 - Завышенная цена\n' +
+                '3 - Отправить на модерацию'
+            );
+
+            if (reason === '1') {
+                alert('✅ Жалоба на "Непонятное объяснение услуги" отправлена');
+            } else if (reason === '2') {
+                alert('✅ Жалоба на "Завышенная цена" отправлена');
+            } else if (reason === '3') {
+                alert('✅ Услуга отправлена на модерацию');
+            }
+        }
+
+        function deleteService(serviceId) {
+            if (!confirm('Вы уверены? Это действие нельзя отменить.')) return;
+
+            let allServices = [];
+            try {
+                const stored = localStorage.getItem('all_services');
+                allServices = stored ? JSON.parse(stored) : [];
+            } catch (e) {}
+
+            allServices = allServices.filter(s => s.id !== serviceId);
+            localStorage.setItem('all_services', JSON.stringify(allServices));
+
+            if (currentUser.services) {
+                currentUser.services = currentUser.services.filter(s => s.id !== serviceId);
+                saveUser(currentUser);
+            }
+
+            closeOrderDetail();
+            alert('✅ Услуга удалена');
+            displayMarketplace();
+        }
+
+        function buyService(serviceId) {
+            const message = prompt('Напишите дополнительные требования или просто нажмите OK:');
+            if (message !== null) {
+                alert('✅ Запрос на услугу отправлен исполнителю!');
+                closeOrderDetail();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                const {email} = JSON.parse(stored);
+                const loaded = await loadUserFromServer(email);
+                if (loaded && currentUser) {
+                    switchPage('homePage');
+                    displayHome();
+                } else {
+                    switchPage('loginPage');
+                }
+            } else {
+                switchPage('loginPage');
+            }
+        });
+    </script>
+</body>
+</html>
