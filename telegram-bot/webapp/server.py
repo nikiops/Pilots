@@ -7,7 +7,7 @@ import socketserver
 import os
 from pathlib import Path
 
-PORT = 8080
+PORT = 3000
 WEBAPP_DIR = Path(__file__).parent
 
 class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):

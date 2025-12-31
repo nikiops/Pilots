@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TgWork - Вход</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f5f7fa;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #c33;
+            font-size: 0.9em;
+        }
+
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3c3;
+            font-size: 0.9em;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .telegram-btn {
+            background: #0088cc;
+            color: white;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .telegram-btn:hover {
+            background: #0074a8;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">💼</div>
+            <h1>TgWork</h1>
+            <p>Фриланс-биржа в Telegram</p>
+        </div>
+
+        <div class="content">
+            <!-- Основное сообщение при загрузке -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Загружаем приложение...</p>
+            </div>
+
+            <!-- Табы для входа/регистрации -->
+            <div id="auth-section" style="display: none;">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('login')">🔑 Вход</button>
+                    <button class="tab-btn" onclick="switchTab('register')">📝 Регистрация</button>
+                </div>
+
+                <!-- Вход -->
+                <div id="login" class="tab-content active">
+                    <div id="login-error"></div>
+                    <form onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label>Telegram ID</label>
+                            <input type="number" id="login-id" placeholder="Твой Telegram ID" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">🔑 Войти</button>
+                    </form>
+                </div>
+
+                <!-- Регистрация -->
+                <div id="register" class="tab-content">
+                    <div id="register-error"></div>
+                    <form onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label>Имя</label>
+                            <input type="text" id="register-name" placeholder="Твое имя" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Username (опционально)</label>
+                            <input type="text" id="register-username" placeholder="@username">
+                        </div>
+                        <div class="form-group">
+                            <label>Telegram ID</label>
+                            <input type="number" id="register-id" placeholder="Твой Telegram ID" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">📝 Зарегистрироваться</button>
+                    </form>
+                </div>
+
+                <!-- Быстрый вход через Telegram -->
+                <div class="divider">ИЛИ</div>
+                <button class="telegram-btn" onclick="loginWithTelegram()">
+                    ✈️ Вход через Telegram
+                </button>
+            </div>
+
+            <!-- Профиль (после входа) -->
+            <div id="profile-section" style="display: none;">
+                <h2 style="color: #667eea; margin-bottom: 20px;">👤 Ваш профиль</h2>
+                <div id="profile-content"></div>
+                <button class="btn btn-primary" onclick="logout()">🚪 Выход</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const API_BASE_URL = 'http://localhost:5000/api';
+        let currentUser = null;
+
+        // Инициализация
+        window.addEventListener('load', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            // Проверяем есть ли сохраненный пользователь
+            const savedUser = localStorage.getItem('tgwork_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showProfile();
+            } else {
+                showAuth();
+            }
+        }
+
+        function switchTab(tabName) {
+            // Скрыть все табы
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Показать нужный таб
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const telegramId = document.getElementById('login-id').value;
+            const errorDiv = document.getElementById('login-error');
+            errorDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/${telegramId}`);
+                if (!response.ok) {
+                    throw new Error('Пользователь не найден');
+                }
+                
+                const user = await response.json();
+                currentUser = user;
+                localStorage.setItem('tgwork_user', JSON.stringify(user));
+                showProfile();
+            } catch (error) {
+                errorDiv.innerHTML = `<div class="error">❌ ${error.message}</div>`;
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            const name = document.getElementById('register-name').value;
+            const username = document.getElementById('register-username').value;
+            const telegramId = document.getElementById('register-id').value;
+            const errorDiv = document.getElementById('register-error');
+            errorDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        telegram_id: parseInt(telegramId),
+                        first_name: name,
+                        username: username || null
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при регистрации');
+                }
+
+                const user = await response.json();
+                currentUser = user;
+                localStorage.setItem('tgwork_user', JSON.stringify(user));
+                showProfile();
+            } catch (error) {
+                errorDiv.innerHTML = `<div class="error">❌ ${error.message}</div>`;
+            }
+        }
+
+        function loginWithTelegram() {
+            // Получаем ID из Telegram WebApp API
+            if (tg.initData) {
+                const params = new URLSearchParams(tg.initData);
+                const userStr = params.get('user');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    document.getElementById('login-id').value = user.id;
+                    handleLogin({ preventDefault: () => {} });
+                    return;
+                }
+            }
+            alert('Не удалось получить данные Telegram');
+        }
+
+        function showAuth() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('auth-section').style.display = 'block';
+            document.getElementById('profile-section').style.display = 'none';
+        }
+
+        function showProfile() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('profile-section').style.display = 'block';
+            renderProfile();
+        }
+
+        function renderProfile() {
+            if (!currentUser) return;
+
+            const html = `
+                <div style="background: #f5f7fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="color: #666;">Имя:</span>
+                        <span style="font-weight: bold;">${currentUser.first_name || 'N/A'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="color: #666;">ID:</span>
+                        <span style="font-weight: bold;">${currentUser.id}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="color: #666;">Рейтинг:</span>
+                        <span style="font-weight: bold; color: #667eea;">⭐ ${currentUser.rating || 0}/5</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #666;">Баланс:</span>
+                        <span style="font-weight: bold; color: #667eea;">${currentUser.balance || 0} ₽</span>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('profile-content').innerHTML = html;
+        }
+
+        function logout() {
+            localStorage.removeItem('tgwork_user');
+            currentUser = null;
+            showAuth();
+        }
+    </script>
+</body>
+</html>

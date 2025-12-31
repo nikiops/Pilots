@@ -3,8 +3,8 @@
 """
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 
-# WebApp URL для профиля (запусти: python telegram-bot/webapp/server.py)
-WEBAPP_URL = "http://localhost:8080/profile.html"
+# WebApp URL для входа/профиля через NGROK
+WEBAPP_URL = "https://ff6c95186261.ngrok-free.app/index.html"
 
 def get_main_menu() -> ReplyKeyboardMarkup:
     """Главное меню"""
@@ -21,10 +21,9 @@ def get_profile_menu() -> InlineKeyboardMarkup:
     """Меню профиля с WebApp"""
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
-            text="📱 Открыть профиль (WebApp)",
+            text="� ВОЙТИ В ПРИЛОЖЕНИЕ",
             web_app=WebAppInfo(url=WEBAPP_URL)
         )],
-        [InlineKeyboardButton(text="✏️ Редактировать", callback_data="edit_profile")],
         [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="main_menu")]
     ])
 
