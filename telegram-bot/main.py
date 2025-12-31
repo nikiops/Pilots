@@ -1,13 +1,16 @@
 """
-Главный файл Telegram бота
+Главный файл Telegram бота для TgWork
 """
+import os
 import asyncio
 import logging
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command
-import os
 from dotenv import load_dotenv
+from aiogram import Bot, Dispatcher, types
+from aiogram.enums import ParseMode
+from handlers import router as main_router
+from callbacks_v2 import router as callback_router
 
+# Загружаем переменные окружения
 load_dotenv()
 
 # Настройка логирования
@@ -21,48 +24,48 @@ logger = logging.getLogger(__name__)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 if not BOT_TOKEN:
     raise ValueError("TELEGRAM_BOT_TOKEN не найден в переменных окружения")
-bot = Bot(token=BOT_TOKEN)
+
+bot = Bot(token=BOT_TOKEN, parse_mode=ParseMode.HTML)
 dp = Dispatcher()
 
+# Регистрируем обработчики
+dp.include_router(main_router)
+dp.include_router(callback_router)
 
-@dp.message(Command("start"))
-async def cmd_start(message: types.Message):
-    """Обработчик команды /start"""
-    user = message.from_user
-    if user is None:
-        await message.answer("Ошибка: не удалось получить информацию о пользователе")
-        return
+async def on_startup():
+    """Функция, вызываемая при запуске бота"""
+    logger.info("✅ Бот запущен и готов к работе!")
     
-    first_name = user.first_name or "друг"
-    await message.answer(
-        f"Привет, {first_name}! 👋\n\n"
-        f"Добро пожаловать на TgWork - фриланс-биржу в Telegram!\n\n"
-        f"Твой Telegram ID: {user.id}"
-    )
+    # Устанавливаем команды бота
+    commands = [
+        types.BotCommand(command="start", description="Начать работу"),
+        types.BotCommand(command="help", description="Справка"),
+        types.BotCommand(command="profile", description="Мой профиль"),
+        types.BotCommand(command="search", description="Поиск услуг"),
+        types.BotCommand(command="orders", description="Мои заказы"),
+        types.BotCommand(command="services", description="Мои услуги"),
+    ]
+    await bot.set_my_commands(commands)
 
-
-@dp.message(Command("help"))
-async def cmd_help(message: types.Message):
-    """Обработчик команды /help"""
-    help_text = """
-    🔧 Доступные команды:
-    
-    /start - Начать работу
-    /profile - Мой профиль
-    /services - Мои услуги
-    /help - Справка
-    """
-    await message.answer(help_text)
-
+async def on_shutdown():
+    """Функция, вызываемая при остановке бота"""
+    logger.info("🛑 Бот остановлен")
 
 async def main():
     """Главная функция"""
-    logger.info("Бот запущен")
+    logger.info("🚀 Запуск бота TgWork...")
+    
+    # Запускаем обработчик запуска
+    await on_startup()
+    
     try:
-        await dp.start_polling(bot)
+        # Запускаем polling
+        await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+    except Exception as e:
+        logger.error(f"❌ Ошибка при запуске бота: {e}")
     finally:
+        await on_shutdown()
         await bot.session.close()
-
 
 if __name__ == "__main__":
     asyncio.run(main())
