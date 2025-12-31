@@ -996,7 +996,17 @@
             document.getElementById('myServicesList').innerHTML = (currentUser.services || []).length ?
                 (currentUser.services || []).map(s => `
                     <div class="card">
-                        <div class="card-title">${s.name}</div>
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">${s.name}</div>
+                            </div>
+                            <div class="card-menu">
+                                <button class="menu-btn" onclick="toggleMyServiceMenu(event, ${s.id})">⋮</button>
+                                <div id="my-service-menu-${s.id}" class="menu-dropdown">
+                                    <div class="menu-item danger" onclick="deleteMyService(${s.id})">🗑️ Удалить</div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="card-desc">${s.description}</div>
                         <div class="card-footer">
                             <span class="price-badge">${s.price}₽</span>
@@ -1011,7 +1021,17 @@
             document.getElementById('myOrdersList').innerHTML = (currentUser.orders || []).length ?
                 (currentUser.orders || []).map(o => `
                     <div class="card">
-                        <div class="card-title">${o.name}</div>
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">${o.name}</div>
+                            </div>
+                            <div class="card-menu">
+                                <button class="menu-btn" onclick="toggleMyOrderMenu(event, ${o.id})">⋮</button>
+                                <div id="my-order-menu-${o.id}" class="menu-dropdown">
+                                    <div class="menu-item danger" onclick="deleteMyOrder(${o.id})">🗑️ Удалить</div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="card-desc">${o.description}</div>
                         <div class="card-footer">
                             <span class="price-badge">${o.budget}₽</span>
@@ -1267,23 +1287,84 @@
         function deleteOrder(orderId) {
             if (!confirm('Вы уверены? Это действие нельзя отменить.')) return;
 
-            let allOrders = [];
-            try {
-                const stored = localStorage.getItem('all_orders');
-                allOrders = stored ? JSON.parse(stored) : [];
-            } catch (e) {}
-
-            allOrders = allOrders.filter(o => o.id !== orderId);
-            localStorage.setItem('all_orders', JSON.stringify(allOrders));
-
+            // Удаляем из профиля
             if (currentUser.orders) {
                 currentUser.orders = currentUser.orders.filter(o => o.id !== orderId);
                 saveUser(currentUser);
             }
 
+            // Удаляем из marketplace
+            let allOrders = [];
+            try {
+                const stored = localStorage.getItem('all_orders');
+                allOrders = stored ? JSON.parse(stored) : [];
+            } catch (e) {}
+            allOrders = allOrders.filter(o => o.id !== orderId);
+            localStorage.setItem('all_orders', JSON.stringify(allOrders));
+
             closeOrderDetail();
             alert('✅ Заказ удален');
             displayMarketplace();
+        }
+
+        function toggleMyOrderMenu(event, orderId) {
+            event.stopPropagation();
+            const menu = document.getElementById(`my-order-menu-${orderId}`);
+            if (menu) {
+                menu.classList.toggle('active');
+            }
+        }
+
+        function deleteMyOrder(orderId) {
+            if (!confirm('Вы уверены? Это действие нельзя отменить.')) return;
+
+            // Удаляем из профиля
+            if (currentUser.orders) {
+                currentUser.orders = currentUser.orders.filter(o => o.id !== orderId);
+                saveUser(currentUser);
+            }
+
+            // Удаляем из marketplace
+            let allOrders = [];
+            try {
+                const stored = localStorage.getItem('all_orders');
+                allOrders = stored ? JSON.parse(stored) : [];
+            } catch (e) {}
+            allOrders = allOrders.filter(o => o.id !== orderId);
+            localStorage.setItem('all_orders', JSON.stringify(allOrders));
+
+            alert('✅ Заказ удален');
+            displayMyOrders();
+        }
+
+        function toggleMyServiceMenu(event, serviceId) {
+            event.stopPropagation();
+            const menu = document.getElementById(`my-service-menu-${serviceId}`);
+            if (menu) {
+                menu.classList.toggle('active');
+            }
+        }
+
+        function deleteMyService(serviceId) {
+            if (!confirm('Вы уверены? Это действие нельзя отменить.')) return;
+
+            // Удаляем из профиля
+            if (currentUser.services) {
+                currentUser.services = currentUser.services.filter(s => s.id !== serviceId);
+                saveUser(currentUser);
+            }
+
+            // Удаляем из marketplace
+            let allServices = [];
+            try {
+                const stored = localStorage.getItem('all_services');
+                allServices = stored ? JSON.parse(stored) : [];
+            } catch (e) {}
+            allServices = allServices.filter(s => s.id !== serviceId);
+            localStorage.setItem('all_services', JSON.stringify(allServices));
+
+            alert('✅ Услуга удалена');
+            displayMyServices();
         }
 
         function submitBid(orderId) {
