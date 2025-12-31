@@ -1,7 +1,10 @@
 """
 Клавиатуры и меню для Telegram бота
 """
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
+
+# WebApp URL для профиля (запусти: python telegram-bot/webapp/server.py)
+WEBAPP_URL = "http://localhost:8080/profile.html"
 
 def get_main_menu() -> ReplyKeyboardMarkup:
     """Главное меню"""
@@ -13,6 +16,17 @@ def get_main_menu() -> ReplyKeyboardMarkup:
         ],
         resize_keyboard=True
     )
+
+def get_profile_menu() -> InlineKeyboardMarkup:
+    """Меню профиля с WebApp"""
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(
+            text="📱 Открыть профиль (WebApp)",
+            web_app=WebAppInfo(url=WEBAPP_URL)
+        )],
+        [InlineKeyboardButton(text="✏️ Редактировать", callback_data="edit_profile")],
+        [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="main_menu")]
+    ])
 
 def get_services_keyboard(services: list) -> InlineKeyboardMarkup:
     """Клавиатура со списком услуг"""

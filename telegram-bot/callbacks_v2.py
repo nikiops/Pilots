@@ -115,6 +115,41 @@ async def callback_chat_order(query: types.CallbackQuery):
     
     await query.answer()
 
+# ============ ПРОФИЛЬ ============
+
+@router.callback_query(F.data == "main_menu")
+async def callback_main_menu_profile(query: types.CallbackQuery):
+    """Обработка нажатия на кнопку профиля"""
+    from keyboards import get_profile_menu
+    
+    try:
+        user_id = query.from_user.id
+        user = await api_client.get_user_profile(user_id)
+        
+        text = f"👤 <b>Ваш профиль</b>\n\n"
+        text += f"Имя: <b>{user.get('name', 'Не указано')}</b>\n"
+        text += f"Username: @{user.get('username', 'N/A')}\n"
+        text += f"Рейтинг: ⭐ {user.get('rating', 0)}/5.0\n"
+        text += f"Услуг: {user.get('services_count', 0)}\n"
+        text += f"Заказов: {user.get('completed_orders', 0)}\n"
+        
+        await query.message.edit_text(text, reply_markup=get_profile_menu())
+    except Exception as e:
+        logger.error(f"Ошибка профиля: {e}")
+        await query.message.edit_text(f"❌ Ошибка при загрузке профиля: {str(e)}")
+    
+    await query.answer()
+
+@router.callback_query(F.data == "edit_profile")
+async def callback_edit_profile(query: types.CallbackQuery):
+    """Редактирование профиля"""
+    await query.message.edit_text(
+        "✏️ <b>Редактирование профиля</b>\n\n"
+        "Функция будет реализована в следующих версиях.\n"
+        "Сейчас вы можете обновить профиль через WebApp."
+    )
+    await query.answer()
+
 @router.callback_query()
 async def callback_unknown(query: types.CallbackQuery):
     """Неизвестный callback"""

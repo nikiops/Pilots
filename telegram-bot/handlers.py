@@ -99,7 +99,9 @@ async def cmd_help(message: types.Message):
 
 @router.message(Command("profile"))
 async def cmd_profile(message: types.Message):
-    """Показать профиль пользователя"""
+    """Показать профиль пользователя через WebApp"""
+    from keyboards import get_profile_menu
+    
     user = message.from_user
     if not user:
         await message.answer("❌ Ошибка получения информации о пользователе")
@@ -109,26 +111,22 @@ async def cmd_profile(message: types.Message):
         profile = await api_client.get_user(user.id)
         
         profile_text = f"""
-👤 **Профиль пользователя**
+👤 <b>Ваш профиль</b>
 
 📍 ID: {profile.get('id')}
 👤 Имя: {profile.get('first_name', 'N/A')}
 💬 Username: @{profile.get('username', 'нет')}
 ⭐ Рейтинг: {profile.get('rating', 0)}/5
-📦 Завершено заказов: {profile.get('completed_orders', 0)}
+📦 Заказов: {profile.get('completed_orders', 0)}
 💰 Баланс: {profile.get('balance', 0)} ₽
 💸 Заработано: {profile.get('total_earned', 0)} ₽
-📊 Потрачено: {profile.get('total_spent', 0)} ₽
-✅ Активен: {'Да' if profile.get('is_active') else 'Нет'}
-🔒 Забанен: {'Да ⛔' if profile.get('is_banned') else 'Нет'}
 """
         
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="📝 Редактировать", callback_data="edit_profile")],
-            [InlineKeyboardButton(text="⬅️ Назад", callback_data="main_menu")]
-        ])
-        
-        await message.answer(profile_text, parse_mode="Markdown", reply_markup=keyboard)
+        await message.answer(
+            profile_text,
+            parse_mode="HTML",
+            reply_markup=get_profile_menu()
+        )
     
     except Exception as e:
         logger.error(f"Ошибка получения профиля: {e}")
