@@ -3,7 +3,7 @@
     "email": "nikitoskazakos@gmail.com",
     "password": "1327Nik1327",
     "name": "Никита Казаков",
-    "accountType": "client",
+    "accountType": "freelancer",
     "username": "tochkavmire",
     "bio": "Опытный разработчик",
     "rating": 4.8,
@@ -29,13 +29,13 @@
     ],
     "orders": [
       {
-        "id": 1767190072898,
-        "name": "Телеграмм бот",
-        "title": "Телеграмм бот",
-        "description": "Ну короче тд и тп ",
+        "id": 1767197923982,
+        "name": "Оке ",
+        "title": "Оке ",
+        "description": "Бот",
         "category": "dev",
         "budget": 1000,
-        "deadline": 4,
+        "deadline": 5,
         "ownerName": "Никита Казаков",
         "ownerEmail": "nikitoskazakos@gmail.com"
       }

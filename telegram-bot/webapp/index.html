@@ -1193,7 +1193,8 @@
             order = allOrders.find(o => o.id === orderId);
             if (!order) return;
 
-            const isOwner = order.ownerEmail === currentUser.email;
+            // Проверяем владельца по email - если нет ownerEmail, то это не его заказ
+            const isOwner = order.ownerEmail && order.ownerEmail.toLowerCase() === currentUser.email.toLowerCase();
             const isFreelancer = currentUser.accountType === 'freelancer';
 
             let detailHTML = `
@@ -1233,17 +1234,17 @@
 
                 <div style="margin-top: 16px; display: flex; gap: 8px; flex-direction: column;">
                     ${isFreelancer && !isOwner ? `
-                        <button class="btn btn-primary" onclick="submitBid('${orderId}')">
+                        <button class="btn btn-primary" onclick="submitBid(${orderId})">
                             📤 Откликнуться
                         </button>
                     ` : ''}
                     ${isOwner ? `
-                        <button class="btn btn-secondary" onclick="deleteOrder('${orderId}')">
+                        <button class="btn btn-secondary" onclick="deleteOrder(${orderId})">
                             🗑️ Удалить заказ
                         </button>
                     ` : ''}
                     ${!isOwner ? `
-                        <button class="btn btn-secondary" onclick="reportOrder('${orderId}')">
+                        <button class="btn btn-secondary" onclick="reportOrder(${orderId})">
                             ⚠️ Пожаловаться
                         </button>
                     ` : ''}
