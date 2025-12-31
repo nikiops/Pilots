@@ -702,8 +702,27 @@
             const email = document.getElementById('emailLogin').value.toLowerCase();
             const password = document.getElementById('passwordLogin').value;
 
+            // Сначала пробуем загрузить с сервера
             const loaded = await loadUserFromServer(email);
-            if (loaded && currentUser && currentUser.password === password) {
+            
+            // Если не загрузилось с сервера, проверяем localStorage
+            if (!loaded) {
+                try {
+                    // Пробуем найти в users_db.json через API
+                    const response = await fetch(`${API_URL}/users/${encodeURIComponent(email)}`);
+                    if (response.ok) {
+                        currentUser = await response.json();
+                    } else {
+                        alert('Неверные учетные данные');
+                        return;
+                    }
+                } catch (e) {
+                    alert('Ошибка подключения к серверу');
+                    return;
+                }
+            }
+
+            if (currentUser && currentUser.password === password) {
                 switchPage('homePage');
                 updateNav(document.querySelector('[onclick*="homePage"]'));
                 displayHome();
