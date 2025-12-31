@@ -465,6 +465,7 @@
 
                 <div style="text-align: center; margin-top: 16px;">
                     <button type="button" class="btn btn-secondary" onclick="switchPage('registerPage')">Создать аккаунт</button>
+                    <button type="button" class="btn btn-secondary" style="margin-top: 8px;" onclick="recoverPassword()">🔑 Забыли пароль?</button>
                 </div>
             </div>
 
@@ -998,7 +999,8 @@
                 category: document.getElementById('serviceCategory').value,
                 price: parseInt(document.getElementById('servicePrice').value),
                 days: parseInt(document.getElementById('serviceDays').value),
-                ownerName: currentUser.name
+                ownerName: currentUser.name,
+                ownerEmail: currentUser.email
             };
 
             if (!currentUser.services) currentUser.services = [];
@@ -1026,11 +1028,13 @@
             const order = {
                 id: Date.now(),
                 name: document.getElementById('orderName').value,
+                title: document.getElementById('orderName').value,
                 description: document.getElementById('orderDesc').value,
                 category: document.getElementById('orderCategory').value,
                 budget: parseInt(document.getElementById('orderBudget').value),
                 deadline: parseInt(document.getElementById('orderDeadline').value),
-                ownerName: currentUser.name
+                ownerName: currentUser.name,
+                ownerEmail: currentUser.email
             };
 
             if (!currentUser.orders) currentUser.orders = [];
@@ -1078,7 +1082,7 @@
 
             let detailHTML = `
                 <div class="card">
-                    <h3 style="color: #58a6ff; margin-bottom: 12px; font-size: 16px;">${order.title}</h3>
+                    <h3 style="color: #58a6ff; margin-bottom: 12px; font-size: 16px;">${order.name}</h3>
                     
                     <div style="margin-bottom: 12px;">
                         <div style="font-size: 12px; color: #6e7681; margin-bottom: 4px;">Описание</div>
@@ -1333,6 +1337,13 @@
             if (message !== null) {
                 alert('✅ Запрос на услугу отправлен исполнителю!');
                 closeOrderDetail();
+            }
+        }
+
+        function recoverPassword() {
+            const email = prompt('Введите ваш email:');
+            if (email) {
+                alert(`✅ Инструкции по восстановлению пароля отправлены на ${email}`);
             }
         }
 
