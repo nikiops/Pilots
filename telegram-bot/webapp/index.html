@@ -717,6 +717,40 @@
                 if (response.ok) {
                     currentUser = await response.json();
                     localStorage.setItem(STORAGE_KEY, JSON.stringify({email: currentUser.email}));
+                    
+                    // Синхронизируем заказы и услуги с localStorage
+                    if (currentUser.orders && currentUser.orders.length > 0) {
+                        let allOrders = [];
+                        try {
+                            const stored = localStorage.getItem('all_orders');
+                            allOrders = stored ? JSON.parse(stored) : [];
+                        } catch (e) {}
+                        
+                        // Добавляем новые заказы из профиля
+                        currentUser.orders.forEach(order => {
+                            if (!allOrders.find(o => o.id === order.id)) {
+                                allOrders.push(order);
+                            }
+                        });
+                        localStorage.setItem('all_orders', JSON.stringify(allOrders));
+                    }
+                    
+                    if (currentUser.services && currentUser.services.length > 0) {
+                        let allServices = [];
+                        try {
+                            const stored = localStorage.getItem('all_services');
+                            allServices = stored ? JSON.parse(stored) : [];
+                        } catch (e) {}
+                        
+                        // Добавляем новые услуги из профиля
+                        currentUser.services.forEach(service => {
+                            if (!allServices.find(s => s.id === service.id)) {
+                                allServices.push(service);
+                            }
+                        });
+                        localStorage.setItem('all_services', JSON.stringify(allServices));
+                    }
+                    
                     return true;
                 }
             } catch (e) {}
