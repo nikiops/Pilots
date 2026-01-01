@@ -688,12 +688,14 @@
         
         async function loadAllOrdersFromServer() {
             try {
+                console.log('🔗 Loading orders from server...');
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 сек таймаут
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 сек таймаут
                 
                 const response = await fetch('/api/users/all', { signal: controller.signal });
                 clearTimeout(timeoutId);
                 
+                console.log('✅ Orders response:', response.status);
                 if (response.ok) {
                     const allUsers = await response.json();
                     let allOrders = [];
@@ -705,31 +707,38 @@
                         }
                     });
                     
+                    console.log('📦 Orders loaded:', allOrders.length);
                     // Сохраняем в localStorage как кеш
                     localStorage.setItem('all_orders', JSON.stringify(allOrders));
                     return allOrders;
+                } else {
+                    console.error('❌ Server error:', response.status);
                 }
             } catch (e) {
-                console.log('Загрузка заказов с сервера не удалась, используем локальный кеш');
+                console.error('❌ Orders load failed:', e.message);
             }
             
             // Если не удалось загрузить с сервера - используем локальный кеш
             try {
                 const stored = localStorage.getItem('all_orders');
+                console.log('📦 Using cached orders:', stored ? JSON.parse(stored).length : 0);
                 return stored ? JSON.parse(stored) : [];
             } catch (e) {
+                console.error('❌ Cache read error:', e.message);
                 return [];
             }
         }
 
         async function loadAllServicesFromServer() {
             try {
+                console.log('🔗 Loading services from server...');
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 сек таймаут
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 сек таймаут
                 
                 const response = await fetch('/api/users/all', { signal: controller.signal });
                 clearTimeout(timeoutId);
                 
+                console.log('✅ Services response:', response.status);
                 if (response.ok) {
                     const allUsers = await response.json();
                     let allServices = [];
@@ -741,19 +750,24 @@
                         }
                     });
                     
+                    console.log('📦 Services loaded:', allServices.length);
                     // Сохраняем в localStorage как кеш
                     localStorage.setItem('all_services', JSON.stringify(allServices));
                     return allServices;
+                } else {
+                    console.error('❌ Server error:', response.status);
                 }
             } catch (e) {
-                console.log('Загрузка услуг с сервера не удалась, используем локальный кеш');
+                console.error('❌ Services load failed:', e.message);
             }
             
             // Если не удалось загрузить с сервера - используем локальный кеш
             try {
                 const stored = localStorage.getItem('all_services');
+                console.log('📦 Using cached services:', stored ? JSON.parse(stored).length : 0);
                 return stored ? JSON.parse(stored) : [];
             } catch (e) {
+                console.error('❌ Cache read error:', e.message);
                 return [];
             }
         }
@@ -788,9 +802,19 @@
         async function loadUserFromServer(email) {
             email = email.toLowerCase();
             try {
-                const response = await fetch(`${API_URL}/users/${encodeURIComponent(email)}`);
+                console.log('🔗 Fetching user:', email);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 сек таймаут
+                
+                const response = await fetch(`${API_URL}/users/${encodeURIComponent(email)}`, {
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                console.log('✅ Response status:', response.status);
                 if (response.ok) {
                     currentUser = await response.json();
+                    console.log('✅ User loaded:', currentUser.email);
                     localStorage.setItem(STORAGE_KEY, JSON.stringify({email: currentUser.email}));
                     
                     // Синхронизируем заказы и услуги с localStorage
@@ -827,25 +851,41 @@
                     }
                     
                     return true;
+                } else {
+                    console.error('❌ Server error:', response.status);
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error('❌ Load error:', e.message);
+            }
             return false;
         }
 
         async function saveUser(userData) {
             userData.email = userData.email.toLowerCase();
             try {
+                console.log('💾 Saving user:', userData.email);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
                 const response = await fetch(`${API_URL}/users/save`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(userData)
+                    body: JSON.stringify(userData),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
+                
                 if (response.ok) {
+                    console.log('✅ User saved');
                     currentUser = userData;
                     localStorage.setItem(STORAGE_KEY, JSON.stringify({email: userData.email}));
                     return true;
+                } else {
+                    console.error('❌ Save failed:', response.status);
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error('❌ Save error:', e.message);
+            }
             return false;
         }
 
@@ -1156,7 +1196,8 @@
                     </div>
                 </div>
 
-                <button class="btn btn-secondary" style="margin-top: 16px;" onclick="logout()">🚪 Выход</button>
+                <button class="btn btn-secondary" style="margin-top: 16px;" onclick="clearAppCache()">🧹 Очистить кеш</button>
+                <button class="btn btn-secondary" style="margin-top: 8px;" onclick="logout()">🚪 Выход</button>
             `;
         }
 
@@ -1242,6 +1283,18 @@
                 displayMyOrders();
             }
         });
+
+        function clearAppCache() {
+            if (confirm('🧹 Это удалит ВСЕ данные приложения!\n\nВы уверены?')) {
+                // Очищаем localStorage
+                localStorage.clear();
+                // Очищаем sessionStorage
+                sessionStorage.clear();
+                
+                alert('✅ Кеш очищен!\n\nОбновите страницу...');
+                location.reload();
+            }
+        }
 
         function logout() {
             if (confirm('Вы уверены?')) {
@@ -1643,57 +1696,72 @@
 
         async function initializeApp() {
             const loadingScreen = document.getElementById('loadingScreen');
+            const INIT_TIMEOUT = 30000; // 30 сек таймаут
             
             try {
-                if (!loadingScreen.classList.contains('hidden')) {
-                    showLoadingStep('🔗 Подключение к серверу...');
-                    await new Promise(r => setTimeout(r, 300));
-                    
-                    showLoadingStep('👤 Загрузка профилей...');
-                    const stored = localStorage.getItem(STORAGE_KEY);
-                    console.log('Stored data:', stored);
-                    
-                    if (stored) {
-                        const {email} = JSON.parse(stored);
-                        console.log('Loading user:', email);
+                // Устанавливаем таймаут
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Таймаут инициализации')), INIT_TIMEOUT)
+                );
+                
+                // Основная инициализация с таймаутом
+                const initPromise = (async () => {
+                    if (!loadingScreen.classList.contains('hidden')) {
+                        showLoadingStep('🔗 Подключение к серверу...');
+                        console.log('📍 [1/8] Connecting to server...');
                         
-                        showLoadingStep('🔐 Проверка учетных данных...');
-                        await new Promise(r => setTimeout(r, 200));
+                        showLoadingStep('👤 Загрузка профилей...');
+                        console.log('📍 [2/8] Loading profiles...');
+                        const stored = localStorage.getItem(STORAGE_KEY);
+                        console.log('📍 Stored data:', !!stored);
                         
-                        const loaded = await loadUserFromServer(email);
-                        console.log('User loaded:', loaded);
-                        
-                        if (loaded && currentUser) {
-                            showLoadingStep('🔄 Синхронизация данных...');
-                            await new Promise(r => setTimeout(r, 300));
+                        if (stored) {
+                            const {email} = JSON.parse(stored);
+                            console.log('📍 [3/8] Loading user:', email);
+                            showLoadingStep('🔐 Проверка учетных данных...');
                             
-                            showLoadingStep('🧹 Очистка удаленных заказов...');
-                            await cleanupDeletedItems();
-                            await new Promise(r => setTimeout(r, 200));
+                            const loaded = await loadUserFromServer(email);
+                            console.log('📍 [4/8] User loaded:', !!loaded);
                             
-                            showLoadingStep('💾 Обновление кеша...');
-                            await loadAllOrdersFromServer();
-                            await loadAllServicesFromServer();
-                            await new Promise(r => setTimeout(r, 200));
-                            
-                            showLoadingStep('✨ Готово! Загружаю интерфейс...');
-                            await new Promise(r => setTimeout(r, 300));
-                            
-                            switchPage('homePage');
-                            displayHome();
+                            if (loaded && currentUser) {
+                                showLoadingStep('🔄 Синхронизация данных...');
+                                console.log('📍 [5/8] Syncing data...');
+                                
+                                showLoadingStep('🧹 Очистка удаленных заказов...');
+                                await cleanupDeletedItems();
+                                console.log('📍 [6/8] Cleanup done...');
+                                
+                                showLoadingStep('💾 Обновление кеша...');
+                                await loadAllOrdersFromServer();
+                                await loadAllServicesFromServer();
+                                console.log('📍 [7/8] Cache updated...');
+                                
+                                showLoadingStep('✨ Готово! Загружаю интерфейс...');
+                                console.log('📍 [8/8] Finishing...');
+                                
+                                await new Promise(r => setTimeout(r, 300));
+                                switchPage('homePage');
+                                displayHome();
+                            } else {
+                                console.error('❌ Auth failed');
+                                showLoadingStep('❌ Ошибка аутентификации');
+                                await new Promise(r => setTimeout(r, 500));
+                                switchPage('loginPage');
+                            }
                         } else {
-                            showLoadingStep('❌ Ошибка аутентификации');
+                            console.log('📍 No stored user, showing login');
+                            showLoadingStep('👋 Добро пожаловать!');
                             await new Promise(r => setTimeout(r, 500));
                             switchPage('loginPage');
                         }
-                    } else {
-                        showLoadingStep('👋 Добро пожаловать!');
-                        await new Promise(r => setTimeout(r, 500));
-                        switchPage('loginPage');
                     }
-                }
+                })();
+                
+                // Ждем что закончится раньше
+                await Promise.race([initPromise, timeoutPromise]);
+                
             } catch (e) {
-                console.error('Init error:', e);
+                console.error('❌ Init error:', e);
                 showLoadingStep('⚠️ Ошибка: ' + e.message);
                 await new Promise(r => setTimeout(r, 2000));
                 switchPage('loginPage');
@@ -1703,6 +1771,8 @@
             if (loadingScreen) {
                 loadingScreen.classList.add('hidden');
             }
+            document.body.classList.add('initialized');
+            console.log('✅ Initialization complete');
         }
 
         async function cleanupDeletedItems() {
@@ -1742,8 +1812,19 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            initializeApp();
+            console.log('📍 DOMContentLoaded fired');
+            initializeApp().catch(e => {
+                console.error('⚠️ Unhandled init error:', e);
+            });
         });
+        
+        // Backup: если DOMContentLoaded не сработает за 2 сек
+        setTimeout(() => {
+            if (!document.body.classList.contains('initialized')) {
+                console.warn('⚠️ DOMContentLoaded timeout, forcing init...');
+                initializeApp().catch(e => console.error('Forced init error:', e));
+            }
+        }, 2000);
     </script>
 </body>
 </html>

@@ -26,9 +26,10 @@ def get_profile_menu() -> InlineKeyboardMarkup:
     """Меню профиля с WebApp"""
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
-            text="� ВОЙТИ В ПРИЛОЖЕНИЕ",
+            text="🚀 ВОЙТИ В ПРИЛОЖЕНИЕ",
             web_app=WebAppInfo(url=WEBAPP_URL)
         )],
+        [InlineKeyboardButton(text="🧹 Очистить кеш", callback_data="clear_cache")],
         [InlineKeyboardButton(text="⬅️ Назад в меню", callback_data="main_menu")]
     ])
 
