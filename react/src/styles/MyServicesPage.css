@@ -1,0 +1,117 @@
+.my-services-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #0d1117;
+  padding: 16px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  color: #c9d1d9;
+}
+
+.service-form {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.service-form input,
+.service-form textarea,
+.service-form select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  color: #c9d1d9;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.service-form input:focus,
+.service-form textarea:focus,
+.service-form select:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.service-form button {
+  width: 100%;
+}
+
+.services-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.service-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s;
+}
+
+.service-card:hover {
+  border-color: #58a6ff;
+}
+
+.service-card h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #c9d1d9;
+}
+
+.service-card p {
+  color: #8b949e;
+  font-size: 13px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.service-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.price {
+  font-weight: 500;
+  color: #58a6ff;
+}
+
+.btn-danger {
+  background: #da3633;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-danger:hover {
+  background: #f85149;
+}
+
+.empty-message {
+  text-align: center;
+  color: #8b949e;
+  padding: 40px;
+}

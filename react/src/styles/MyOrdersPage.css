@@ -1,0 +1,84 @@
+.my-orders-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #0d1117;
+  padding: 16px;
+}
+
+.order-form {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.order-form input,
+.order-form textarea,
+.order-form select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  color: #c9d1d9;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.order-form input:focus,
+.order-form textarea:focus,
+.order-form select:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.order-form button {
+  width: 100%;
+}
+
+.orders-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s;
+}
+
+.order-card:hover {
+  border-color: #58a6ff;
+}
+
+.order-card h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #c9d1d9;
+}
+
+.order-card p {
+  color: #8b949e;
+  font-size: 13px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.order-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.budget {
+  font-weight: 500;
+  color: #58a6ff;
+}

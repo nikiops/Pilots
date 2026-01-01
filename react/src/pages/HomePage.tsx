@@ -14,6 +14,7 @@ export const HomePage: React.FC<HomePageProps> = ({ user, onLogout, onNavigate }
   const handleSwitchMode = () => {
     const newType = accountType === 'freelancer' ? 'client' : 'freelancer';
     setAccountType(newType);
+    // TODO: Обновить в профиле
   };
 
   return (
@@ -80,18 +81,24 @@ export const HomePage: React.FC<HomePageProps> = ({ user, onLogout, onNavigate }
             <>
               <button
                 className="action-btn"
-                onClick={() => onNavigate('createOrder')}
-              >
-                ✍️ Новый заказ
-              </button>
-              <button
-                className="action-btn"
                 onClick={() => onNavigate('myOrders')}
               >
                 📋 Мои заказы ({user.orders?.length || 0})
               </button>
+              <button
+                className="action-btn"
+                onClick={() => onNavigate('marketplace')}
+              >
+                🛍️ Найти исполнителей
+              </button>
             </>
           )}
+          <button
+            className="action-btn"
+            onClick={() => onNavigate('profile')}
+          >
+            👤 Профиль
+          </button>
         </div>
       </div>
     </div>

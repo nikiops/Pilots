@@ -3,6 +3,9 @@ import { AppProvider, useApp } from './context/AppContext';
 import { AuthPage } from './pages/AuthPage';
 import { HomePage } from './pages/HomePage';
 import { MarketplacePage } from './pages/MarketplacePage';
+import { MyServicesPage } from './pages/MyServicesPage';
+import { MyOrdersPage } from './pages/MyOrdersPage';
+import { ProfilePage } from './pages/ProfilePage';
 
 function AppContent() {
   const { currentUser, setCurrentUser, isLoading } = useApp();
@@ -44,6 +47,27 @@ function AppContent() {
         <MarketplacePage
           userEmail={currentUser.email}
           isFreelancer={currentUser.accountType === 'freelancer'}
+        />
+      )}
+      {currentPage === 'myServices' && (
+        <MyServicesPage
+          user={currentUser}
+          onUpdate={setCurrentUser}
+          onNavigate={setCurrentPage}
+        />
+      )}
+      {currentPage === 'myOrders' && (
+        <MyOrdersPage
+          user={currentUser}
+          onUpdate={setCurrentUser}
+          onNavigate={setCurrentPage}
+        />
+      )}
+      {currentPage === 'profile' && (
+        <ProfilePage
+          user={currentUser}
+          onUpdate={setCurrentUser}
+          onNavigate={setCurrentPage}
         />
       )}
     </div>
