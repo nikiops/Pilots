@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import '../styles/HomePage.css';
-import { useApp } from '../context/AppContext';
 import type { User } from '../context/AppContext';
 
 interface HomePageProps {
