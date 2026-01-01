@@ -1641,49 +1641,59 @@
         async function initializeApp() {
             const loadingScreen = document.getElementById('loadingScreen');
             
-            if (!loadingScreen.classList.contains('hidden')) {
-                showLoadingStep('Подключение к серверу...');
-                await new Promise(r => setTimeout(r, 300));
-                
-                showLoadingStep('Загрузка профилей...');
-                const stored = localStorage.getItem(STORAGE_KEY);
-                
-                if (stored) {
-                    const {email} = JSON.parse(stored);
+            try {
+                if (!loadingScreen.classList.contains('hidden')) {
+                    showLoadingStep('🔗 Подключение к серверу...');
+                    await new Promise(r => setTimeout(r, 300));
                     
-                    showLoadingStep('Проверка учетных данных...');
-                    await new Promise(r => setTimeout(r, 200));
+                    showLoadingStep('👤 Загрузка профилей...');
+                    const stored = localStorage.getItem(STORAGE_KEY);
+                    console.log('Stored data:', stored);
                     
-                    const loaded = await loadUserFromServer(email);
-                    
-                    if (loaded && currentUser) {
-                        showLoadingStep('Синхронизация данных...');
-                        await new Promise(r => setTimeout(r, 300));
+                    if (stored) {
+                        const {email} = JSON.parse(stored);
+                        console.log('Loading user:', email);
                         
-                        showLoadingStep('Очистка удаленных заказов...');
-                        await cleanupDeletedItems();
+                        showLoadingStep('🔐 Проверка учетных данных...');
                         await new Promise(r => setTimeout(r, 200));
                         
-                        showLoadingStep('Обновление кеша...');
-                        await loadAllOrdersFromServer();
-                        await loadAllServicesFromServer();
-                        await new Promise(r => setTimeout(r, 200));
+                        const loaded = await loadUserFromServer(email);
+                        console.log('User loaded:', loaded);
                         
-                        showLoadingStep('Готово! Загружаю интерфейс...');
-                        await new Promise(r => setTimeout(r, 300));
-                        
-                        switchPage('homePage');
-                        displayHome();
+                        if (loaded && currentUser) {
+                            showLoadingStep('🔄 Синхронизация данных...');
+                            await new Promise(r => setTimeout(r, 300));
+                            
+                            showLoadingStep('🧹 Очистка удаленных заказов...');
+                            await cleanupDeletedItems();
+                            await new Promise(r => setTimeout(r, 200));
+                            
+                            showLoadingStep('💾 Обновление кеша...');
+                            await loadAllOrdersFromServer();
+                            await loadAllServicesFromServer();
+                            await new Promise(r => setTimeout(r, 200));
+                            
+                            showLoadingStep('✨ Готово! Загружаю интерфейс...');
+                            await new Promise(r => setTimeout(r, 300));
+                            
+                            switchPage('homePage');
+                            displayHome();
+                        } else {
+                            showLoadingStep('❌ Ошибка аутентификации');
+                            await new Promise(r => setTimeout(r, 500));
+                            switchPage('loginPage');
+                        }
                     } else {
-                        showLoadingStep('Ошибка аутентификации');
+                        showLoadingStep('👋 Добро пожаловать!');
                         await new Promise(r => setTimeout(r, 500));
                         switchPage('loginPage');
                     }
-                } else {
-                    showLoadingStep('Добро пожаловать!');
-                    await new Promise(r => setTimeout(r, 500));
-                    switchPage('loginPage');
                 }
+            } catch (e) {
+                console.error('Init error:', e);
+                showLoadingStep('⚠️ Ошибка: ' + e.message);
+                await new Promise(r => setTimeout(r, 2000));
+                switchPage('loginPage');
             }
             
             // Скрываем спиннер

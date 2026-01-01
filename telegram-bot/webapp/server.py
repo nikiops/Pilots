@@ -35,8 +35,10 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=WEBAPP_DIR, **kwargs)
     
     def do_GET(self):
+        log(f"📥 GET {self.path}")
+        
         if self.path.startswith('/api/users/all'):
-            log(f"📥 GET /api/users/all")
+            log(f"📥 Обработка: /api/users/all")
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
@@ -48,7 +50,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         
         if self.path.startswith('/api/users/'):
             email = urllib.parse.unquote(self.path.replace('/api/users/', '').strip()).lower()
-            log(f"📥 GET /api/users/{email}")
+            log(f"📥 Обработка: /api/users/{email}")
             
             if email in users_db:
                 self.send_response(200)
@@ -67,9 +69,12 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': 'User not found'}).encode())
             return
         
+        log(f"📄 Обслуживание статического файла")
         super().do_GET()
     
     def do_POST(self):
+        log(f"📥 POST {self.path}")
+        
         if self.path == '/api/users/save':
             log(f"📥 POST /api/users/save")
             content_length = int(self.headers.get('Content-Length', 0))
