@@ -684,9 +684,13 @@
         let selectedCategory = null;
         
         async function loadAllOrdersFromServer() {
-            // Загружаем все профили пользователей и собираем их заказы
             try {
-                const response = await fetch('/api/users/all');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 сек таймаут
+                
+                const response = await fetch('/api/users/all', { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
                 if (response.ok) {
                     const allUsers = await response.json();
                     let allOrders = [];
@@ -703,7 +707,7 @@
                     return allOrders;
                 }
             } catch (e) {
-                console.log('Не удалось загрузить заказы с сервера, используем локальный кеш');
+                console.log('Загрузка заказов с сервера не удалась, используем локальный кеш');
             }
             
             // Если не удалось загрузить с сервера - используем локальный кеш
@@ -716,9 +720,13 @@
         }
 
         async function loadAllServicesFromServer() {
-            // Загружаем все профили пользователей и собираем их услуги
             try {
-                const response = await fetch('/api/users/all');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 сек таймаут
+                
+                const response = await fetch('/api/users/all', { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
                 if (response.ok) {
                     const allUsers = await response.json();
                     let allServices = [];
@@ -735,7 +743,7 @@
                     return allServices;
                 }
             } catch (e) {
-                console.log('Не удалось загрузить услуги с сервера, используем локальный кеш');
+                console.log('Загрузка услуг с сервера не удалась, используем локальный кеш');
             }
             
             // Если не удалось загрузить с сервера - используем локальный кеш
@@ -1622,27 +1630,105 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
+        function showLoadingStep(text) {
+            const loadingText = document.querySelector('.loading-text');
+            if (loadingText) {
+                loadingText.textContent = text;
+            }
+        }
+
+        async function initializeApp() {
             const loadingScreen = document.getElementById('loadingScreen');
             
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                const {email} = JSON.parse(stored);
-                const loaded = await loadUserFromServer(email);
-                if (loaded && currentUser) {
-                    switchPage('homePage');
-                    displayHome();
+            if (!loadingScreen.classList.contains('hidden')) {
+                showLoadingStep('Подключение к серверу...');
+                await new Promise(r => setTimeout(r, 300));
+                
+                showLoadingStep('Загрузка профилей...');
+                const stored = localStorage.getItem(STORAGE_KEY);
+                
+                if (stored) {
+                    const {email} = JSON.parse(stored);
+                    
+                    showLoadingStep('Проверка учетных данных...');
+                    await new Promise(r => setTimeout(r, 200));
+                    
+                    const loaded = await loadUserFromServer(email);
+                    
+                    if (loaded && currentUser) {
+                        showLoadingStep('Синхронизация данных...');
+                        await new Promise(r => setTimeout(r, 300));
+                        
+                        showLoadingStep('Очистка удаленных заказов...');
+                        await cleanupDeletedItems();
+                        await new Promise(r => setTimeout(r, 200));
+                        
+                        showLoadingStep('Обновление кеша...');
+                        await loadAllOrdersFromServer();
+                        await loadAllServicesFromServer();
+                        await new Promise(r => setTimeout(r, 200));
+                        
+                        showLoadingStep('Готово! Загружаю интерфейс...');
+                        await new Promise(r => setTimeout(r, 300));
+                        
+                        switchPage('homePage');
+                        displayHome();
+                    } else {
+                        showLoadingStep('Ошибка аутентификации');
+                        await new Promise(r => setTimeout(r, 500));
+                        switchPage('loginPage');
+                    }
                 } else {
+                    showLoadingStep('Добро пожаловать!');
+                    await new Promise(r => setTimeout(r, 500));
                     switchPage('loginPage');
                 }
-            } else {
-                switchPage('loginPage');
             }
             
-            // Скрываем загрузку после завершения
-            setTimeout(() => {
+            // Скрываем спиннер
+            if (loadingScreen) {
                 loadingScreen.classList.add('hidden');
-            }, 500);
+            }
+        }
+
+        async function cleanupDeletedItems() {
+            // Очищаем удаленные заказы из БД
+            try {
+                const response = await fetch('/api/users/all', { 
+                    signal: AbortSignal.timeout(3000) 
+                });
+                if (response.ok) {
+                    const allUsers = await response.json();
+                    let validOrders = [];
+                    let validServices = [];
+                    
+                    // Собираем только валидные заказы и услуги
+                    Object.values(allUsers).forEach(user => {
+                        if (user.orders && Array.isArray(user.orders)) {
+                            validOrders.push(...user.orders);
+                        }
+                        if (user.services && Array.isArray(user.services)) {
+                            validServices.push(...user.services);
+                        }
+                    });
+                    
+                    // Удаляем невалидные из localStorage
+                    const oldOrders = JSON.parse(localStorage.getItem('all_orders') || '[]');
+                    const oldServices = JSON.parse(localStorage.getItem('all_services') || '[]');
+                    
+                    const newOrders = oldOrders.filter(o => validOrders.some(v => v.id === o.id));
+                    const newServices = oldServices.filter(s => validServices.some(v => v.id === s.id));
+                    
+                    localStorage.setItem('all_orders', JSON.stringify(newOrders));
+                    localStorage.setItem('all_services', JSON.stringify(newServices));
+                }
+            } catch (e) {
+                console.log('Очистка выполнена локально');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
         });
     </script>
 </body>
