@@ -28,6 +28,14 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=WEBAPP_DIR, **kwargs)
     
     def do_GET(self):
+        if self.path.startswith('/api/users/all'):
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps(users_db).encode())
+            return
+        
         if self.path.startswith('/api/users/'):
             email = urllib.parse.unquote(self.path.replace('/api/users/', '').strip()).lower()
             

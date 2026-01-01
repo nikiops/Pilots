@@ -683,6 +683,70 @@
         let currentUser = null;
         let selectedCategory = null;
         
+        async function loadAllOrdersFromServer() {
+            // Загружаем все профили пользователей и собираем их заказы
+            try {
+                const response = await fetch('/api/users/all');
+                if (response.ok) {
+                    const allUsers = await response.json();
+                    let allOrders = [];
+                    
+                    // Собираем все заказы из профилей
+                    Object.values(allUsers).forEach(user => {
+                        if (user.orders && Array.isArray(user.orders)) {
+                            allOrders.push(...user.orders);
+                        }
+                    });
+                    
+                    // Сохраняем в localStorage как кеш
+                    localStorage.setItem('all_orders', JSON.stringify(allOrders));
+                    return allOrders;
+                }
+            } catch (e) {
+                console.log('Не удалось загрузить заказы с сервера, используем локальный кеш');
+            }
+            
+            // Если не удалось загрузить с сервера - используем локальный кеш
+            try {
+                const stored = localStorage.getItem('all_orders');
+                return stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        async function loadAllServicesFromServer() {
+            // Загружаем все профили пользователей и собираем их услуги
+            try {
+                const response = await fetch('/api/users/all');
+                if (response.ok) {
+                    const allUsers = await response.json();
+                    let allServices = [];
+                    
+                    // Собираем все услуги из профилей
+                    Object.values(allUsers).forEach(user => {
+                        if (user.services && Array.isArray(user.services)) {
+                            allServices.push(...user.services);
+                        }
+                    });
+                    
+                    // Сохраняем в localStorage как кеш
+                    localStorage.setItem('all_services', JSON.stringify(allServices));
+                    return allServices;
+                }
+            } catch (e) {
+                console.log('Не удалось загрузить услуги с сервера, используем локальный кеш');
+            }
+            
+            // Если не удалось загрузить с сервера - используем локальный кеш
+            try {
+                const stored = localStorage.getItem('all_services');
+                return stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
         const CATEGORIES = [
             { id: 'design', name: '🎨 Дизайн' },
             { id: 'dev', name: '💻 Разработка' },
@@ -908,7 +972,7 @@
             }
         }
 
-        function displayMarketplace() {
+        async function displayMarketplace() {
             const isFreelancer = currentUser.accountType === 'freelancer';
             document.getElementById('marketplaceTitle').textContent = isFreelancer ? 'Доступные заказы' : 'Услуги';
             
@@ -920,12 +984,8 @@
             `).join('');
 
             if (isFreelancer) {
-                // ИСПОЛНИТЕЛЬ видит заказы
-                let allOrders = [];
-                try {
-                    const stored = localStorage.getItem('all_orders');
-                    allOrders = stored ? JSON.parse(stored) : [];
-                } catch (e) {}
+                // ИСПОЛНИТЕЛЬ видит заказы - загружаем из сервера
+                const allOrders = await loadAllOrdersFromServer();
 
                 const filtered = selectedCategory 
                     ? allOrders.filter(o => o.category === selectedCategory)
@@ -957,10 +1017,9 @@
             } else {
                 // ЗАКАЗЧИК видит услуги
                 let allServices = [];
-                try {
-                    const stored = localStorage.getItem('all_services');
-                    allServices = stored ? JSON.parse(stored) : [];
-                } catch (e) {}
+            } else {
+                // ЗАКАЗЧИК видит услуги - загружаем из сервера
+                const allServices = await loadAllServicesFromServer();
 
                 const filtered = selectedCategory 
                     ? allServices.filter(s => s.category === selectedCategory)
