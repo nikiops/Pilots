@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import '../styles/MyOrdersPage.css';
 import { userAPI } from '../api/client';
 import type { Order, User } from '../context/AppContext';
@@ -6,10 +6,9 @@ import type { Order, User } from '../context/AppContext';
 interface MyOrdersPageProps {
   user: User;
   onUpdate: (updatedUser: User) => void;
-  onNavigate: (page: string) => void;
 }
 
-export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({ user, onUpdate, onNavigate }) => {
+export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({ user, onUpdate }) => {
   const [orders, setOrders] = useState<Order[]>(user.orders || []);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({

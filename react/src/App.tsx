@@ -53,20 +53,17 @@ function AppContent() {
         <MyServicesPage
           user={currentUser}
           onUpdate={setCurrentUser}
-          onNavigate={setCurrentPage}
         />
       )}
       {currentPage === 'myOrders' && (
         <MyOrdersPage
           user={currentUser}
           onUpdate={setCurrentUser}
-          onNavigate={setCurrentPage}
         />
       )}
       {currentPage === 'profile' && (
         <ProfilePage
           user={currentUser}
-          onUpdate={setCurrentUser}
           onNavigate={setCurrentPage}
         />
       )}

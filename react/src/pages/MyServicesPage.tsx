@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import '../styles/MyServicesPage.css';
 import { userAPI } from '../api/client';
 import type { Service, User } from '../context/AppContext';
@@ -6,10 +6,9 @@ import type { Service, User } from '../context/AppContext';
 interface MyServicesPageProps {
   user: User;
   onUpdate: (updatedUser: User) => void;
-  onNavigate: (page: string) => void;
 }
 
-export const MyServicesPage: React.FC<MyServicesPageProps> = ({ user, onUpdate, onNavigate }) => {
+export const MyServicesPage: React.FC<MyServicesPageProps> = ({ user, onUpdate }) => {
   const [services, setServices] = useState<Service[]>(user.services || []);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({

@@ -4,11 +4,10 @@ import type { User } from '../context/AppContext';
 
 interface ProfilePageProps {
   user: User;
-  onUpdate: (updatedUser: User) => void;
   onNavigate: (page: string) => void;
 }
 
-export const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUpdate, onNavigate }) => {
+export const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate }) => {
   return (
     <div className="profile-page">
       <div className="profile-container">
