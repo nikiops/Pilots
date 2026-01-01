@@ -7,9 +7,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# WebApp URL для входа/профиля через NGROK
-# Пытаемся получить из переменной окружения, если нет - используем fallback
-WEBAPP_URL = os.getenv('NGROK_URL', 'https://localhost:3000/index.html')
+# WebApp URL с версионированием для обхода кеша Telegram
+NGROK_URL = os.getenv('NGROK_URL', 'https://localhost:3000')
+WEBAPP_VERSION = os.getenv('WEBAPP_VERSION', '1')  # Увеличивать при обновлениях
+WEBAPP_URL = f"{NGROK_URL}/index.html?v={WEBAPP_VERSION}"
 
 def get_main_menu() -> ReplyKeyboardMarkup:
     """Главное меню"""
