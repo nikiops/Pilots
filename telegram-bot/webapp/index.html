@@ -1687,92 +1687,112 @@
         }
 
         function showLoadingStep(text) {
-            const loadingText = document.querySelector('#loadingScreen .loading-text');
+            // Пытаемся найти разные варианты элемента
+            let loadingText = document.querySelector('#loadingScreen .loading-text');
+            if (!loadingText) {
+                loadingText = document.querySelector('.loading-text');
+            }
+            if (!loadingText) {
+                loadingText = document.getElementById('loadingText');
+            }
+            
             if (loadingText) {
                 loadingText.textContent = text;
-                console.log(text); // Для отладки
+                loadingText.style.opacity = '1';
+                loadingText.style.color = '#c9d1d9';
             }
+            
+            console.log('💬 ' + text); // Для отладки
         }
 
         async function initializeApp() {
+            console.log('🎬 initializeApp STARTED');
+            
             const loadingScreen = document.getElementById('loadingScreen');
-            const INIT_TIMEOUT = 30000; // 30 сек таймаут
             
             try {
-                // Устанавливаем таймаут
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Таймаут инициализации')), INIT_TIMEOUT)
-                );
+                // Показываем что нас загрузили
+                showLoadingStep('🔗 Подключение...');
                 
-                // Основная инициализация с таймаутом
-                const initPromise = (async () => {
-                    if (!loadingScreen.classList.contains('hidden')) {
-                        showLoadingStep('🔗 Подключение к серверу...');
-                        console.log('📍 [1/8] Connecting to server...');
+                // Проверяем есть ли сохраненный пользователь
+                const stored = localStorage.getItem(STORAGE_KEY);
+                console.log('📦 Stored user:', !!stored);
+                
+                if (stored) {
+                    try {
+                        const {email} = JSON.parse(stored);
+                        console.log('👤 Loading user:', email);
+                        showLoadingStep('👤 Загрузка ' + email.split('@')[0] + '...');
                         
-                        showLoadingStep('👤 Загрузка профилей...');
-                        console.log('📍 [2/8] Loading profiles...');
-                        const stored = localStorage.getItem(STORAGE_KEY);
-                        console.log('📍 Stored data:', !!stored);
+                        // Пытаемся загрузить пользователя (с таймаутом)
+                        const loadPromise = loadUserFromServer(email);
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Timeout')), 8000)
+                        );
                         
-                        if (stored) {
-                            const {email} = JSON.parse(stored);
-                            console.log('📍 [3/8] Loading user:', email);
-                            showLoadingStep('🔐 Проверка учетных данных...');
-                            
-                            const loaded = await loadUserFromServer(email);
-                            console.log('📍 [4/8] User loaded:', !!loaded);
-                            
-                            if (loaded && currentUser) {
-                                showLoadingStep('🔄 Синхронизация данных...');
-                                console.log('📍 [5/8] Syncing data...');
-                                
-                                showLoadingStep('🧹 Очистка удаленных заказов...');
-                                await cleanupDeletedItems();
-                                console.log('📍 [6/8] Cleanup done...');
-                                
-                                showLoadingStep('💾 Обновление кеша...');
-                                await loadAllOrdersFromServer();
-                                await loadAllServicesFromServer();
-                                console.log('📍 [7/8] Cache updated...');
-                                
-                                showLoadingStep('✨ Готово! Загружаю интерфейс...');
-                                console.log('📍 [8/8] Finishing...');
-                                
-                                await new Promise(r => setTimeout(r, 300));
-                                switchPage('homePage');
-                                displayHome();
-                            } else {
-                                console.error('❌ Auth failed');
-                                showLoadingStep('❌ Ошибка аутентификации');
-                                await new Promise(r => setTimeout(r, 500));
-                                switchPage('loginPage');
+                        let loaded = false;
+                        try {
+                            await Promise.race([loadPromise, timeoutPromise]);
+                            loaded = true;
+                            console.log('✅ User loaded');
+                            showLoadingStep('✅ Загружен!');
+                        } catch (e) {
+                            console.warn('⚠️ Load failed, using cache:', e.message);
+                            showLoadingStep('⚠️ Используем кеш...');
+                            // Используем кешированные данные если есть
+                            const cachedUser = localStorage.getItem(STORAGE_KEY);
+                            if (cachedUser) {
+                                currentUser = JSON.parse(cachedUser);
+                                loaded = true;
                             }
+                        }
+                        
+                        if (loaded && currentUser) {
+                            // Загружаем заказы и услуги
+                            showLoadingStep('📦 Загрузка данных...');
+                            try {
+                                await Promise.all([
+                                    loadAllOrdersFromServer(),
+                                    loadAllServicesFromServer()
+                                ]);
+                            } catch (e) {
+                                console.warn('Data load failed:', e.message);
+                            }
+                            
+                            console.log('🏠 Switching to home');
+                            showLoadingStep('🎉 Готово!');
+                            await new Promise(r => setTimeout(r, 300));
+                            
+                            switchPage('homePage');
+                            displayHome();
                         } else {
-                            console.log('📍 No stored user, showing login');
-                            showLoadingStep('👋 Добро пожаловать!');
+                            console.error('❌ No user');
+                            showLoadingStep('❌ Ошибка');
                             await new Promise(r => setTimeout(r, 500));
                             switchPage('loginPage');
                         }
+                    } catch (e) {
+                        console.error('❌ Parse error:', e);
+                        switchPage('loginPage');
                     }
-                })();
-                
-                // Ждем что закончится раньше
-                await Promise.race([initPromise, timeoutPromise]);
-                
+                } else {
+                    console.log('👋 No saved user');
+                    showLoadingStep('👋 Добро пожаловать!');
+                    await new Promise(r => setTimeout(r, 500));
+                    switchPage('loginPage');
+                }
             } catch (e) {
-                console.error('❌ Init error:', e);
-                showLoadingStep('⚠️ Ошибка: ' + e.message);
-                await new Promise(r => setTimeout(r, 2000));
+                console.error('❌ FATAL ERROR:', e);
+                showLoadingStep('❌ ОШИБКА');
+                await new Promise(r => setTimeout(r, 1000));
                 switchPage('loginPage');
             }
             
-            // Скрываем спиннер
+            // Скрываем загрузку
             if (loadingScreen) {
                 loadingScreen.classList.add('hidden');
             }
-            document.body.classList.add('initialized');
-            console.log('✅ Initialization complete');
+            console.log('✅ initializeApp COMPLETE');
         }
 
         async function cleanupDeletedItems() {
@@ -1811,20 +1831,28 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('📍 DOMContentLoaded fired');
-            initializeApp().catch(e => {
-                console.error('⚠️ Unhandled init error:', e);
-            });
-        });
+        // Запускаем БЕЗ ожидания DOMContentLoaded (может не сработать в Telegram браузере)
+        console.log('🚀 Скрипт загружен, запускаю инициализацию...');
         
-        // Backup: если DOMContentLoaded не сработает за 2 сек
+        // Способ 1: Сразу если DOM готов
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('📍 DOMContentLoaded fired');
+                initializeApp().catch(e => console.error('Init error:', e));
+            });
+        } else {
+            console.log('📍 DOM уже загружен, запускаю инициализацию');
+            initializeApp().catch(e => console.error('Init error:', e));
+        }
+        
+        // Резервная копия - если ничего не помогло через 1 сек
         setTimeout(() => {
-            if (!document.body.classList.contains('initialized')) {
-                console.warn('⚠️ DOMContentLoaded timeout, forcing init...');
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (!loadingScreen || !loadingScreen.classList.contains('hidden')) {
+                console.warn('⚠️ Init timeout, forcing...');
                 initializeApp().catch(e => console.error('Forced init error:', e));
             }
-        }, 2000);
+        }, 1000);
     </script>
 </body>
 </html>
