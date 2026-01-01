@@ -1193,9 +1193,12 @@
             order = allOrders.find(o => o.id === orderId);
             if (!order) return;
 
-            // Проверяем владельца по email - если нет ownerEmail, то это не его заказ
+            // Проверяем владельца: если ownerEmail совпадает с текущим пользователем - это его заказ
             const isOwner = order.ownerEmail && order.ownerEmail.toLowerCase() === currentUser.email.toLowerCase();
             const isFreelancer = currentUser.accountType === 'freelancer';
+            
+            // Показываем "Откликнуться" только если это фрилансер И это НЕ его заказ
+            const canBid = isFreelancer && !isOwner;
 
             let detailHTML = `
                 <div class="card">
@@ -1233,7 +1236,7 @@
                 </div>
 
                 <div style="margin-top: 16px; display: flex; gap: 8px; flex-direction: column;">
-                    ${isFreelancer && !isOwner ? `
+                    ${canBid ? `
                         <button class="btn btn-primary" onclick="submitBid(${orderId})">
                             📤 Откликнуться
                         </button>
@@ -1243,7 +1246,7 @@
                             🗑️ Удалить заказ
                         </button>
                     ` : ''}
-                    ${!isOwner ? `
+                    ${!isOwner && !canBid ? `
                         <button class="btn btn-secondary" onclick="reportOrder(${orderId})">
                             ⚠️ Пожаловаться
                         </button>
@@ -1369,11 +1372,46 @@
         }
 
         function submitBid(orderId) {
-            const bidMessage = prompt('Напишите ваше предложение/отклик на заказ:');
-            if (bidMessage) {
-                alert('✅ Ваш отклик отправлен заказчику!');
-                closeOrderDetail();
+            // Показываем форму отклика
+            const bidFormHTML = `
+                <div class="card">
+                    <h3 style="color: #58a6ff; margin-bottom: 16px; font-size: 16px;">Отправить отклик</h3>
+                    
+                    <div class="form-group">
+                        <label>Ваша цена (₽)</label>
+                        <input type="number" id="bidPrice" placeholder="Введите вашу цену" min="100" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Срок выполнения (дни)</label>
+                        <input type="number" id="bidDays" placeholder="Количество дней" min="1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Ваше предложение</label>
+                        <textarea id="bidMessage" placeholder="Расскажите почему вы подходите для этой работы..." style="resize: vertical; min-height: 100px;"></textarea>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="sendBid(${orderId})">📤 Отправить отклик</button>
+                    <button class="btn btn-secondary" style="margin-top: 8px;" onclick="closeOrderDetail()">Отмена</button>
+                </div>
+            `;
+            
+            document.getElementById('orderDetailBody').innerHTML = bidFormHTML;
+        }
+
+        function sendBid(orderId) {
+            const price = document.getElementById('bidPrice').value;
+            const days = document.getElementById('bidDays').value;
+            const message = document.getElementById('bidMessage').value;
+            
+            if (!price || !days || !message) {
+                alert('Заполните все поля!');
+                return;
             }
+            
+            alert(`✅ Отклик отправлен!\n\nЦена: ${price}₽\nСрок: ${days} дн.\n\nЖдите ответа заказчика...`);
+            closeOrderDetail();
         }
 
         function getCategoryName(categoryKey) {
