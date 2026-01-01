@@ -1631,9 +1631,10 @@
         }
 
         function showLoadingStep(text) {
-            const loadingText = document.querySelector('.loading-text');
+            const loadingText = document.querySelector('#loadingScreen .loading-text');
             if (loadingText) {
                 loadingText.textContent = text;
+                console.log(text); // Для отладки
             }
         }
 
