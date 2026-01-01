@@ -34,6 +34,13 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=WEBAPP_DIR, **kwargs)
     
+    def end_headers(self):
+        # Добавляем NO-CACHE хедеры ко ВСЕМ ответам
+        self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
+        self.send_header('Pragma', 'no-cache')
+        self.send_header('Expires', '0')
+        super().end_headers()
+    
     def do_GET(self):
         log(f"📥 GET {self.path}")
         
