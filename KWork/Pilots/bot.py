@@ -68,12 +68,29 @@ def get_download_keyboard() -> types.InlineKeyboardMarkup:
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message) -> None:
     """Обработчик команды /start."""
-    reply_markup = get_download_keyboard()
-    await message.answer(
-        f"🎉 Привет, {message.from_user.first_name}!\n\n"
-        "Нажмите кнопку ниже чтобы скачать гайд",
-        reply_markup=reply_markup
-    )
+    # Получить параметр если есть (например, ?start=guide из канала)
+    args = message.text.split()[1] if len(message.text.split()) > 1 else None
+    
+    user_id = message.from_user.id
+    is_subscribed = await check_subscription(user_id)
+    
+    # Если кнопка из канала и пользователь подписан - сразу отправить файл
+    if args == "guide" and is_subscribed:
+        try:
+            pdf_file = FSInputFile(PDF_PATH, filename=PDF_NAME)
+            await message.answer_document(pdf_file)
+            log_download(user_id, message.from_user.username)
+            await message.answer("✅ Гайд скачан!")
+        except FileNotFoundError:
+            await message.answer("❌ Файл не найден!")
+    else:
+        # Обычное приветствие и кнопка скачивания
+        reply_markup = get_download_keyboard()
+        await message.answer(
+            f"🎉 Привет, {message.from_user.first_name}!\n\n"
+            "Нажмите кнопку ниже чтобы скачать гайд",
+            reply_markup=reply_markup
+        )
 
 
 @dp.message(Command("debug"))
