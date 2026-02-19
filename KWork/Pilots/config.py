@@ -10,7 +10,7 @@ CHANNEL_ID = -1001769135858
 CHANNEL_USERNAME = "LAPSHENKINA"
 
 # ID администратора (твой ID из команды /debug в боте, например: 123456789)
-ADMIN_ID = 0  # ← ЗАМЕНИ НА СВОЙ ID!
+ADMIN_ID = 31101994  # @Anastasia_Lapshenkina
 
 # Путь к PDF-файлу
 PDF_PATH = "guide.pdf"  # Файл должен быть в папке с ботом
