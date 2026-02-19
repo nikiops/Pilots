@@ -176,6 +176,49 @@ async def handle_download(callback_query: types.CallbackQuery) -> None:
         await callback_query.answer("Сначала подпишитесь на канал", show_alert=True)
 
 
+@dp.callback_query(F.data == "channel_download")
+async def handle_channel_download(callback_query: types.CallbackQuery) -> None:
+    """Обработчик кнопки скачивания прямо из канала."""
+    user_id = callback_query.from_user.id
+    is_subscribed = await check_subscription(user_id)
+    
+    if is_subscribed:
+        # Пользователь подписан - отправляем файл
+        try:
+            pdf_file = FSInputFile(PDF_PATH, filename=PDF_NAME)
+            await callback_query.from_user.send_document(pdf_file)
+            log_download(user_id, callback_query.from_user.username)
+            await callback_query.answer("✅ Гайд отправлен в ЛС!", show_alert=True)
+        except FileNotFoundError:
+            await callback_query.answer("❌ Файл не найден!", show_alert=True)
+    else:
+        # Не подписан - просим подписаться
+        rely_markup = types.InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    types.InlineKeyboardButton(
+                        text="📢 Подписаться на канал",
+                        url=f"https://t.me/LAPSHENKINA"
+                    )
+                ]
+            ]
+        )
+        await callback_query.answer()
+        # Отправляем в ЛС сообщение с кнопкой подписки
+        try:
+            await callback_query.from_user.send_message(
+                "❌ Вы не подписаны на канал @LAPSHENKINA\n\n"
+                "🔗 Подпишитесь на канал, затем нажмите кнопку в посте ещё раз",
+                reply_markup=rely_markup
+            )
+        except Exception as e:
+            logger.error(f"Не удалось отправить сообщение: {e}")
+            await callback_query.answer(
+                "Подпишитесь на @LAPSHENKINA чтобы скачать",
+                show_alert=True
+            )
+
+
 async def main() -> None:
     """Запуск бота с polling."""
     logger.info("🤖 Бот запущен!")
